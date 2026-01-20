@@ -19,6 +19,9 @@
   },
   "homepage": "https://github.com/frncsge/lomod-bhms#readme",
   "dependencies": {
-    "express": "^5.2.1"
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "nodemailer": "^7.0.12",
+    "pg": "^8.17.1"
   }
 }
