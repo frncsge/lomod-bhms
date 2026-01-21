@@ -1,16 +1,29 @@
-import crypto from "crypto";
+import crypto, { hash } from "crypto";
+import bcrypt from "bcrypt";
+import redisClient from "../config/redis.js";
 import { getLandlordByEmail } from "../models/landlord.js";
 import { storeEmailVerificationToken } from "../models/emailVerificationToken.js";
 import transporter from "../config/mailer.js";
 
 const signup = async (req, res) => {
-  const { email } = req.body;
+  const { email, password } = req.body;
+  const salt_round = 10;
 
   try {
     //chcek if email already exists
     const emailTaken = await getLandlordByEmail(email);
     if (emailTaken)
       return res.status(409).json({ message: "Email already in use" });
+
+    //hash password
+    const hashed_password = await bcrypt.hash(password, salt_round);
+
+    //cache email and hashed password for easier retrieval later
+    await redisClient.setEx(
+      verificationToken,
+      180,
+      JSON.stringify({ email, hashed_password }),
+    );
 
     //email exists -> generate verification code and its expiry
     const verificationToken = crypto.randomBytes(32).toString("hex");
