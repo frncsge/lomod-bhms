@@ -3,6 +3,6 @@ import { signup } from "../controllers/landlord.js";
 
 const router = express.Router();
 
-router.post("/signup", signup);
+router.post("/sign-up", signup);
 
 export default router;
