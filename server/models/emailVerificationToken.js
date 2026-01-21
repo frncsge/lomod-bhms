@@ -16,4 +16,21 @@ async function storeEmailVerificationToken(token, expiresAt) {
   }
 }
 
-export { storeEmailVerificationToken };
+const validateEmailVerificationToken = async (token) => {
+  try {
+    const result = await pool.query(
+      `SELECT verification_token 
+      FROM email_verification_token 
+      WHERE verification_token = $1 
+        AND expires_at > NOW() 
+        AND is_used = FALSE`,
+      [token],
+    );
+    return result.rows[0];
+  } catch (error) {
+    console.error("Error in validateEmailVerificationToken function:", error);
+    throw error;
+  }
+};
+
+export { storeEmailVerificationToken, validateEmailVerificationToken };
