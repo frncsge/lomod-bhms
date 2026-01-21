@@ -4,7 +4,7 @@ import { storeEmailVerificationToken } from "../models/emailVerificationToken.js
 import transporter from "../config/mailer.js";
 
 const signup = async (req, res) => {
-  const { email, password } = req.body;
+  const { email } = req.body;
 
   try {
     //chcek if email already exists
