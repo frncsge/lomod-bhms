@@ -2,11 +2,10 @@ import crypto, { hash } from "crypto";
 import bcrypt from "bcrypt";
 import redisClient from "../config/redis.js";
 import { getLandlordByEmail } from "../models/landlord.js";
-import { storeEmailVerificationToken } from "../models/emailVerificationToken.js";
 import transporter from "../config/mailer.js";
 
 const signup = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, accountName } = req.body;
   const salt_round = 10;
 
   try {
@@ -16,24 +15,20 @@ const signup = async (req, res) => {
       return res.status(409).json({ message: "Email already in use" });
 
     //hash password
-    const hashed_password = await bcrypt.hash(password, salt_round);
+    const hashedPassword = await bcrypt.hash(password, salt_round);
+
+    //generate verification token
+    const verificationToken = crypto.randomBytes(32).toString("hex");
 
     //cache email and hashed password for easier retrieval later
     await redisClient.setEx(
       verificationToken,
       180,
-      JSON.stringify({ email, hashed_password }),
+      JSON.stringify({ email, hashedPassword, accountName }),
     );
 
-    //email exists -> generate verification code and its expiry
-    const verificationToken = crypto.randomBytes(32).toString("hex");
-    const expiresAt = new Date(Date.now() + 3 * 60 * 1000);
-
-    //store verification token
-    await storeEmailVerificationToken(verificationToken, expiresAt);
-
     //send verification email
-    const verificationLink = `http://localhost:3000/verify-email?token=${verificationToken}`;
+    const verificationLink = `http://localhost:3000/auth/landlord/verify-email?token=${verificationToken}`;
     await transporter.sendMail({
       from: `"Francel Boarding House" <${process.env.SMTP_USER}>`,
       to: email,
@@ -44,9 +39,12 @@ const signup = async (req, res) => {
       `,
     });
 
-    res.status(200).json({ message: `Verification email sent to ${email}.` });
+    res
+      .status(200)
+      .json({ message: `Verification email sent ${verificationToken}.` });
   } catch (error) {
     console.error("Error when signing up:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 

@@ -26,6 +26,15 @@ const validateEmailVerificationToken = async (token) => {
         AND is_used = FALSE`,
       [token],
     );
+
+    //mark the token as used (true) if it is not expired, not used, and has been checked
+    if (result.rows[0]) {
+      await pool.query(
+        "UPDATE email_verification_token SET is_used = TRUE WHERE verification_token = $1",
+        [result.rows[0].verification_token],
+      );
+    }
+
     return result.rows[0];
   } catch (error) {
     console.error("Error in validateEmailVerificationToken function:", error);
