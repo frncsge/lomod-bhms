@@ -28,16 +28,16 @@ const signup = async (req, res) => {
     );
 
     //send verification email
-    const verificationLink = `http://localhost:3000/auth/landlord/verify-email?token=${verificationToken}`;
-    await transporter.sendMail({
-      from: `"Francel Boarding House" <${process.env.SMTP_USER}>`,
-      to: email,
-      subject: "Verify your email",
-      html: `<h2>Welcome to Francel BHMS!</h2>
-             <p>Click the link below to verify your email. Expires in 3 minutes.</p>
-             <a href="${verificationLink}">Verify Email</a>
-      `,
-    });
+    // const verificationLink = `http://localhost:3000/auth/landlord/verify-email?token=${verificationToken}`;
+    // await transporter.sendMail({
+    //   from: `"Francel Boarding House" <${process.env.SMTP_USER}>`,
+    //   to: email,
+    //   subject: "Verify your email",
+    //   html: `<h2>Welcome to Francel BHMS!</h2>
+    //          <p>Click the link below to verify your email. Expires in 3 minutes.</p>
+    //          <a href="${verificationLink}">Verify Email</a>
+    //   `,
+    // });
 
     res
       .status(200)
