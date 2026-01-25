@@ -1,5 +1,5 @@
 import express from "express";
-import landlordRoutes from "./routes/landlord.js";
+import authRoutes from "./routes/auth.js";
 
 const app = express();
 
@@ -7,7 +7,7 @@ const app = express();
 app.use(express.json());
 
 //sign up route
-app.use("/auth", landlordRoutes);
+app.use("/auth", authRoutes);
 
 //default route for checking
 app.get("/", (req, res) =>
