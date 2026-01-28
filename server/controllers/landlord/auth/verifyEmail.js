@@ -25,12 +25,12 @@ const verifyEmail = async (req, res) => {
     await redisClient.del(token);
 
     //create access token
-    const accessToken = jwt.sign({ sub: landlord_id }, accessTokenSecret, {
+    const accessToken = jwt.sign({ sub: landlord_id, role: "landlord" }, accessTokenSecret, {
       expiresIn: "15m",
     });
 
     //store access token in httpOnly cookie
-    res.cookie("accessToken", accessToken, {
+    res.cookie("access_token", accessToken, {
       httpOnly: true,
       secure: false, //true in prod, only for https
       sameSite: "none", //allow cross-origin req

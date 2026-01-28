@@ -23,12 +23,12 @@ const signin = async (req, res) => {
       return res.status(401).json({ message: "Invalid email or password" });
 
     //create access token
-    const accessToken = jwt.sign({ sub: landlord_id }, accessTokenSecret, {
+    const accessToken = jwt.sign({ sub: landlord_id, role: "landlord" }, accessTokenSecret, {
       expiresIn: "15m",
     });
 
     //store access token in httpOnly cookie
-    res.cookie("accessToken", accessToken, {
+    res.cookie("access_token", accessToken, {
       httpOnly: true,
       secure: false, //true in prod, only for https
       sameSite: "none", //allow cross-origin req
