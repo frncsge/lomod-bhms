@@ -1,8 +1,8 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { getLandlordByEmail } from "../../../models/landlord.js";
+import { getLandlordByEmail } from "../../models/landlord.js";
 
-const signin = async (req, res) => {
+const landlordSignin = async (req, res) => {
   const { email, password } = req.body;
   const accessTokenSecret = process.env.ACCESS_TOKEN_SECRET;
 
@@ -23,9 +23,13 @@ const signin = async (req, res) => {
       return res.status(401).json({ message: "Invalid email or password" });
 
     //create access token
-    const accessToken = jwt.sign({ sub: landlord_id, role: "landlord" }, accessTokenSecret, {
-      expiresIn: "15m",
-    });
+    const accessToken = jwt.sign(
+      { sub: landlord_id, role: "landlord" },
+      accessTokenSecret,
+      {
+        expiresIn: "15m",
+      },
+    );
 
     //store access token in httpOnly cookie
     res.cookie("access_token", accessToken, {
@@ -35,13 +39,13 @@ const signin = async (req, res) => {
       maxAge: 15 * 60 * 1000,
     });
 
-    res.status(200).json({ message: "Sign-in successful"});
+    res.status(200).json({ message: "Sign-in successful" });
   } catch (error) {
     console.error("Error occured while signing in landlord:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
 
-export { signin };
+export { landlordSignin };
 
 //put JWT for sign-up and sign-in

@@ -1,10 +1,10 @@
 import crypto from "crypto";
 import bcrypt from "bcrypt";
-import redisClient from "../../../config/redis.js";
-import { getLandlordByEmail } from "../../../models/landlord.js";
-import transporter from "../../../config/mailer.js";
+import redisClient from "../../config/redis.js";
+import { getLandlordByEmail } from "../../models/landlord.js";
+import transporter from "../../config/mailer.js";
 
-const signup = async (req, res) => {
+const landlordSignup = async (req, res) => {
   const { email, password, accountName } = req.body;
   const salt_round = 10;
 
@@ -48,4 +48,4 @@ const signup = async (req, res) => {
   }
 };
 
-export { signup };
+export { landlordSignup };
