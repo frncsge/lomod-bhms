@@ -29,7 +29,10 @@ const verifyEmail = async (req, res) => {
       expiresIn: "15m",
     });
 
-    res.status(201).json({ message: "Sign up successful", accessToken });
+    //store access token in httpOnly cookie
+    
+
+    res.status(201).json({ message: "Sign up successful"});
   } catch (error) {
     console.error("Error when verifying the landlord email:", error);
     res.status(500).json({ message: "Server error" });

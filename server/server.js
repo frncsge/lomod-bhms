@@ -1,10 +1,12 @@
 import express from "express";
+import cookieParser from "cookie-parser";
 import authRoutes from "./routes/auth.js";
 
 const app = express();
 
 //middlewares
 app.use(express.json());
+app.use(cookieParser());
 
 //sign up route
 app.use("/auth", authRoutes);
