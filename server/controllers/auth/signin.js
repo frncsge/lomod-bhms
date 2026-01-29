@@ -1,10 +1,10 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { getLandlordByEmail } from "../../models/landlord.js";
+import { generateAccessToken } from "../../helpers/generateAccessToken.js";
 
 const landlordSignin = async (req, res) => {
   const { email, password } = req.body;
-  const accessTokenSecret = process.env.ACCESS_TOKEN_SECRET;
 
   try {
     //check if email exists
@@ -23,13 +23,8 @@ const landlordSignin = async (req, res) => {
       return res.status(401).json({ message: "Invalid email or password" });
 
     //create access token
-    const accessToken = jwt.sign(
-      { sub: landlord_id, role: "landlord" },
-      accessTokenSecret,
-      {
-        expiresIn: "15m",
-      },
-    );
+    const user = { sub: landlord_id, role: "landlord" };
+    const accessToken = generateAccessToken(user);
 
     //store access token in httpOnly cookie
     res.cookie("access_token", accessToken, {
