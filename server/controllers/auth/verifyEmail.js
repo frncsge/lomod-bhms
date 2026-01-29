@@ -1,6 +1,7 @@
 import redisClient from "../../config/redis.js";
 import { storeNewLandlord } from "../../models/landlord.js";
 import { generateAccessToken } from "../../helpers/generateAccessToken.js";
+import { setAccessTokenCookie } from "../../utils/authCookies.js";
 
 const verifyEmail = async (req, res) => {
   const { token } = req.query;
@@ -28,12 +29,7 @@ const verifyEmail = async (req, res) => {
     const accessToken = generateAccessToken(user);
 
     //store access token in httpOnly cookie
-    res.cookie("access_token", accessToken, {
-      httpOnly: true,
-      secure: false, //true in prod, only for https
-      sameSite: "none", //allow cross-origin req
-      maxAge: 15 * 60 * 1000,
-    });
+    setAccessTokenCookie(res, accessToken);
 
     res.status(201).json({ message: "Sign up successful" });
   } catch (error) {

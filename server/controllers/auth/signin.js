@@ -1,6 +1,7 @@
 import bcrypt from "bcrypt";
 import { getLandlordByEmail } from "../../models/landlord.js";
 import { generateAccessToken } from "../../helpers/generateAccessToken.js";
+import { setAccessTokenCookie } from "../../utils/authCookies.js";
 
 const landlordSignin = async (req, res) => {
   const { email, password } = req.body;
@@ -26,12 +27,7 @@ const landlordSignin = async (req, res) => {
     const accessToken = generateAccessToken(user);
 
     //store access token in httpOnly cookie
-    res.cookie("access_token", accessToken, {
-      httpOnly: true,
-      secure: false, //true in prod, only for https
-      sameSite: "none", //allow cross-origin req
-      maxAge: 15 * 60 * 1000,
-    });
+    setAccessTokenCookie(res, accessToken);
 
     res.status(200).json({ message: "Sign-in successful" });
   } catch (error) {
