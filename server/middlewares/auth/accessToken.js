@@ -1,4 +1,4 @@
-import jwt, { decode } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 
 const authenticateAccessToken = (requiredRole) => (req, res, next) => {
   const { access_token } = req.cookies;
@@ -11,7 +11,7 @@ const authenticateAccessToken = (requiredRole) => (req, res, next) => {
     req.user = decoded.sub;
     req.role = decoded.role;
 
-    //check if required role matches with the signed role
+    //skips this if statement when there is no required role given
     if (requiredRole && decoded.role !== requiredRole) {
       return res.status(403).json({ message: "Forbidden" });
     }
@@ -21,3 +21,5 @@ const authenticateAccessToken = (requiredRole) => (req, res, next) => {
     return res.status(401).json({ message: "Invalid token" });
   }
 };
+
+export { authenticateAccessToken };
