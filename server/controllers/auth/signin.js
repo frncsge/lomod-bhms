@@ -1,5 +1,4 @@
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
 import { getLandlordByEmail } from "../../models/landlord.js";
 import { generateAccessToken } from "../../helpers/generateAccessToken.js";
 
@@ -42,5 +41,3 @@ const landlordSignin = async (req, res) => {
 };
 
 export { landlordSignin };
-
-//put JWT for sign-up and sign-in

@@ -1,10 +1,9 @@
 import redisClient from "../../config/redis.js";
-import jwt from "jsonwebtoken";
 import { storeNewLandlord } from "../../models/landlord.js";
+import { generateAccessToken } from "../../helpers/generateAccessToken.js";
 
 const verifyEmail = async (req, res) => {
   const { token } = req.query;
-  const accessTokenSecret = process.env.ACCESS_TOKEN_SECRET;
 
   try {
     //retrieve email and password from cache
@@ -25,13 +24,8 @@ const verifyEmail = async (req, res) => {
     await redisClient.del(token);
 
     //create access token
-    const accessToken = jwt.sign(
-      { sub: landlord_id, role: "landlord" },
-      accessTokenSecret,
-      {
-        expiresIn: "15m",
-      },
-    );
+    const user = { sub: landlord_id, role: "landlord" };
+    const accessToken = generateAccessToken(user);
 
     //store access token in httpOnly cookie
     res.cookie("access_token", accessToken, {
