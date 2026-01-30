@@ -1,6 +1,8 @@
 import redisClient from "../../config/redis.js";
 import { storeNewLandlord } from "../../models/landlord.js";
 import { generateAccessToken } from "../../helpers/generateAccessToken.js";
+import { generateRefreshToken } from "../../helpers/generateRefreshToken.js";
+import { cacheRefreshToken } from "../../utils/cacheRefreshToken.js";
 import { setAccessTokenCookie } from "../../utils/authCookies.js";
 
 const verifyEmail = async (req, res) => {
@@ -21,12 +23,14 @@ const verifyEmail = async (req, res) => {
     const result = await storeNewLandlord(email, hashedPassword, accountName);
     const { landlord_id } = result;
 
-    //delete token from redis
+    //delete verification token from redis after successful verification
     await redisClient.del(token);
 
-    //create access token
+    //create access and refresh tokens
     const user = { sub: landlord_id, role: "landlord" };
     const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
+    await cacheRefreshToken(refreshToken, user); 
 
     //store access token in httpOnly cookie
     setAccessTokenCookie(res, accessToken);

@@ -1,6 +1,8 @@
 import bcrypt from "bcrypt";
 import { getLandlordByEmail } from "../../models/landlord.js";
 import { generateAccessToken } from "../../helpers/generateAccessToken.js";
+import { generateRefreshToken } from "../../helpers/generateRefreshToken.js";
+import { cacheRefreshToken } from "../../utils/cacheRefreshToken.js";
 import { setAccessTokenCookie } from "../../utils/authCookies.js";
 
 const landlordSignin = async (req, res) => {
@@ -22,9 +24,11 @@ const landlordSignin = async (req, res) => {
     if (!passwordMatch)
       return res.status(401).json({ message: "Invalid email or password" });
 
-    //create access token
+    //create access and refresh tokens
     const user = { sub: landlord_id, role: "landlord" };
     const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
+    await cacheRefreshToken(refreshToken, user);
 
     //store access token in httpOnly cookie
     setAccessTokenCookie(res, accessToken);
