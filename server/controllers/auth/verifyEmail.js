@@ -3,7 +3,7 @@ import { storeNewLandlord } from "../../models/landlord.js";
 import { generateAccessToken } from "../../helpers/generateAccessToken.js";
 import { generateRefreshToken } from "../../helpers/generateRefreshToken.js";
 import { cacheRefreshToken } from "../../utils/cacheRefreshToken.js";
-import { setAccessTokenCookie } from "../../utils/authCookies.js";
+import { setAccessTokenCookie, setRefreshTokenCookie } from "../../utils/authCookies.js";
 
 const verifyEmail = async (req, res) => {
   const { token } = req.query;
@@ -34,6 +34,7 @@ const verifyEmail = async (req, res) => {
 
     //store access token in httpOnly cookie
     setAccessTokenCookie(res, accessToken);
+    setRefreshTokenCookie(res, refreshToken);
 
     res.status(201).json({ message: "Sign up successful" });
   } catch (error) {
