@@ -18,7 +18,7 @@ const authenticateAccessToken = (requiredRole) => (req, res, next) => {
 
     next();
   } catch (error) {
-    return res.status(401).json({ message: "Invalid token" });
+    return res.status(401).json({ message: "Invalid acccess token" });
   }
 };
 

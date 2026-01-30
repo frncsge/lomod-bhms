@@ -1,4 +1,4 @@
-import redisClient from "../config/redis";
+import redisClient from "../config/redis.js";
 
 export const cacheRefreshToken = async (token, user) => {
   const ttl = 7 * 24 * 60 * 60; //7 days time-to-live

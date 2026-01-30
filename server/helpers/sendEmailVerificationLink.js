@@ -1,6 +1,9 @@
-import transporter from "../config/mailer";
+import transporter from "../config/mailer.js";
 
-export const sendEmailVerificationLink = async (verificationLink, receiverEmail) => {
+export const sendEmailVerificationLink = async (
+  verificationLink,
+  receiverEmail,
+) => {
   await transporter.sendMail({
     from: `"Francel Boarding House" <${process.env.SMTP_USER}>`,
     to: receiverEmail,
