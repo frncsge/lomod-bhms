@@ -2,7 +2,7 @@ import crypto from "crypto";
 import bcrypt from "bcrypt";
 import redisClient from "../../config/redis.js";
 import { getLandlordByEmail } from "../../models/landlord.js";
-import transporter from "../../config/mailer.js";
+import { sendEmailVerificationLink } from "../../helpers/sendEmailVerificationLink.js";
 
 const landlordSignup = async (req, res) => {
   const { email, password, accountName } = req.body;
@@ -23,21 +23,13 @@ const landlordSignup = async (req, res) => {
     //cache email and hashed password for easier retrieval later
     await redisClient.setEx(
       verificationToken,
-      180,
+      180, //3 mins expiry
       JSON.stringify({ email, hashedPassword, accountName }),
     );
 
     // send verification email
     // const verificationLink = `http://localhost:3000/auth/landlord/verify-email?token=${verificationToken}`;
-    // await transporter.sendMail({
-    //   from: `"Francel Boarding House" <${process.env.SMTP_USER}>`,
-    //   to: email,
-    //   subject: "Verify your email",
-    //   html: `<h2>Welcome to Francel BHMS!</h2>
-    //          <p>Click the link below to verify your email. Expires in 3 minutes.</p>
-    //          <a href="${verificationLink}">Verify Email</a>
-    //   `,
-    // });
+    // await sendEmailVerificationLink(verificationLink, email);
 
     res
       .status(200)
