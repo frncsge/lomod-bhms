@@ -1,8 +1,14 @@
 import redisClient from "../../config/redis.js";
-import { storeNewLandlord } from "../../models/landlord.js";
-import { generateAccessToken, generateRefreshToken } from "../../helpers/jwt.helper.js";
-import { cacheRefreshToken } from "../../utils/cacheRefreshToken.js";
-import { setAccessTokenCookie, setRefreshTokenCookie } from "../../utils/authCookies.js";
+import { storeNewLandlord } from "../../models/landlord.model.js";
+import {
+  generateAccessToken,
+  generateRefreshToken,
+} from "../../helpers/jwt.helper.js";
+import { cacheRefreshToken } from "../../utils/authCache.util.js";
+import {
+  setAccessTokenCookie,
+  setRefreshTokenCookie,
+} from "../../utils/authCookies.util.js";
 
 const verifyEmail = async (req, res) => {
   const { token } = req.query;
@@ -29,7 +35,7 @@ const verifyEmail = async (req, res) => {
     const user = { sub: landlord_id, role: "landlord" };
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
-    await cacheRefreshToken(refreshToken, user); 
+    await cacheRefreshToken(refreshToken, user);
 
     //store access token in httpOnly cookie
     setAccessTokenCookie(res, accessToken);

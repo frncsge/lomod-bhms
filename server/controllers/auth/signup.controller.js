@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import bcrypt from "bcrypt";
 import redisClient from "../../config/redis.js";
-import { getLandlordByEmail } from "../../models/landlord.js";
+import { getLandlordByEmail } from "../../models/landlord.model.js";
 import { sendEmailVerificationLink } from "../../helpers/mailer.helper.js";
 
 const landlordSignup = async (req, res) => {
