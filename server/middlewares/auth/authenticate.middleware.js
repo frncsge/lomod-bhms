@@ -1,23 +1,18 @@
 import jwt from "jsonwebtoken";
 
-export const authenticate = (requiredRole) => (req, res, next) => {
+export const authenticate = (req, res, next) => {
   const { access_token } = req.cookies;
   const accessTokenSecret = process.env.ACCESS_TOKEN_SECRET;
 
   try {
     const decoded = jwt.verify(access_token, accessTokenSecret);
 
-    //create user and role req object keys
-    req.user = decoded.sub;
-    req.role = decoded.role;
-
-    //skips this if statement when there is no required role given
-    if (requiredRole && decoded.role !== requiredRole) {
-      return res.status(403).json({ message: "Forbidden" });
-    }
+    //create user object key
+    const { sub, role } = decoded;
+    req.user = { id: sub, role };
 
     next();
   } catch (error) {
-    return res.status(401).json({ message: "Invalid acccess token" });
+    return res.status(401).json({ message: "Invalid access token" });
   }
 };
