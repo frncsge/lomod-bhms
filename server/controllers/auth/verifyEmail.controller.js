@@ -1,7 +1,6 @@
 import redisClient from "../../config/redis.js";
 import { storeNewLandlord } from "../../models/landlord.js";
-import { generateAccessToken } from "../../helpers/generateAccessToken.js";
-import { generateRefreshToken } from "../../helpers/generateRefreshToken.js";
+import { generateAccessToken, generateRefreshToken } from "../../helpers/jwt.helper.js";
 import { cacheRefreshToken } from "../../utils/cacheRefreshToken.js";
 import { setAccessTokenCookie, setRefreshTokenCookie } from "../../utils/authCookies.js";
 
