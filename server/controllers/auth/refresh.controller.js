@@ -1,4 +1,3 @@
-import jwt from "jsonwebtoken";
 import redisClient from "../../config/redis.js";
 import {
   generateAccessToken,
