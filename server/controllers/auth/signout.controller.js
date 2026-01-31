@@ -1,5 +1,5 @@
-import redisClient from "../../config/redis";
-import { clearJwtCookies } from "../../utils/authCookies.util";
+import redisClient from "../../config/redis.js";
+import { clearJwtCookies } from "../../utils/authCookies.util.js";
 
 export const signout = async (req, res) => {
   try {

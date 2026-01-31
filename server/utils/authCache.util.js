@@ -4,12 +4,16 @@ export const cacheRefreshToken = async (refreshToken, user) => {
   const ttl = 7 * 24 * 60 * 60; //7 days time-to-live
 
   try {
-    await redisClient.setEx(`refreshToken:${refreshToken}`, ttl, JSON.stringify(user));
+    await redisClient.setEx(
+      `refreshToken:${refreshToken}`,
+      ttl,
+      JSON.stringify(user),
+    );
   } catch (error) {
     console.error("Error caching refresh token:", error);
     throw error;
   }
 };
 
-//to do: 
-//sign out
+//to do 
+//create email for francel BHMS 
