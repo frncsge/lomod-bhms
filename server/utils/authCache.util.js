@@ -1,10 +1,10 @@
 import redisClient from "../config/redis.js";
 
-export const cacheRefreshToken = async (token, user) => {
+export const cacheRefreshToken = async (refreshToken, user) => {
   const ttl = 7 * 24 * 60 * 60; //7 days time-to-live
 
   try {
-    await redisClient.setEx(`refreshToken:${token}`, ttl, JSON.stringify(user));
+    await redisClient.setEx(`refreshToken:${refreshToken}`, ttl, JSON.stringify(user));
   } catch (error) {
     console.error("Error caching refresh token:", error);
     throw error;
@@ -12,5 +12,4 @@ export const cacheRefreshToken = async (token, user) => {
 };
 
 //to do: 
-//renewing access token
 //sign out

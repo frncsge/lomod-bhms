@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 
-const authenticateAccessToken = (requiredRole) => (req, res, next) => {
+export const authenticate = (requiredRole) => (req, res, next) => {
   const { access_token } = req.cookies;
   const accessTokenSecret = process.env.ACCESS_TOKEN_SECRET;
 
@@ -21,5 +21,3 @@ const authenticateAccessToken = (requiredRole) => (req, res, next) => {
     return res.status(401).json({ message: "Invalid acccess token" });
   }
 };
-
-export { authenticateAccessToken };
