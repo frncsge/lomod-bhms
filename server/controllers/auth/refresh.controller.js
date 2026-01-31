@@ -8,6 +8,7 @@ import {
   setRefreshTokenCookie,
 } from "../../utils/authCookies.util.js";
 import { cacheRefreshToken } from "../../utils/authCache.util.js";
+import { clearJwtCookies } from "../../utils/authCookies.util.js";
 
 export const getNewAccessToken = async (req, res) => {
   try {
@@ -19,10 +20,12 @@ export const getNewAccessToken = async (req, res) => {
 
     //validate refresh token
     const data = await redisClient.get(`refreshToken:${refresh_token}`);
-    if (!data)
-      return res
-        .status(401)
-        .json({ message: "Invalid or expired refresh token" });
+    if (!data) {
+      //force signout
+      clearJwtCookies(res);
+
+      return res.status(401).json({ message: "Session expired" });
+    }
 
     //remove used/old refresh token from redis cache
     await redisClient.del(`refreshToken:${refresh_token}`);
