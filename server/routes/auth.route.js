@@ -7,11 +7,14 @@ import { signout } from "../controllers/auth/signout.controller.js";
 
 const router = express.Router();
 
-//landlord
+//landlord auth
 router.get("/landlord/verify-email", verifyEmail);
 router.post("/landlord/sign-up", landlordSignup);
 router.post("/landlord/sign-in", landlordSignin);
 router.post("/landlord/sign-out", signout);
+router.post("/landlord/tenant");
+
+//tenant aut
 
 //refresh token
 router.post("/refresh", getNewAccessToken);
