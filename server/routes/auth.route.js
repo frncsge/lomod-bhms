@@ -1,6 +1,6 @@
 import express from "express";
 import { landlordSignup } from "../controllers/auth/signup.controller.js";
-import { verifyEmail } from "../controllers/auth/mailer.controller.js";
+import { verifyEmail } from "../controllers/auth/emailVerification.controller.js";
 import { landlordSignin } from "../controllers/auth/signin.controller.js";
 import { getNewAccessToken } from "../controllers/auth/refresh.controller.js";
 import { signout } from "../controllers/auth/signout.controller.js";

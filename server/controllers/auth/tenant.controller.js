@@ -33,5 +33,5 @@ export const createTenantAccount = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 
-  //store tenant in database
+  //email the landlord the new tenant account credential
 };
