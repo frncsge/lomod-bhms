@@ -1,6 +1,7 @@
 import express from "express";
 import cookieParser from "cookie-parser";
 import authRoutes from "./routes/auth.route.js";
+import tenantRoutes from "./routes/tenant.route.js";
 
 const app = express();
 
@@ -10,6 +11,9 @@ app.use(cookieParser());
 
 //sign up route
 app.use("/auth", authRoutes);
+
+//tenant route
+app.use(tenantRoutes);
 
 //default route for checking
 app.get("/", (req, res) =>
