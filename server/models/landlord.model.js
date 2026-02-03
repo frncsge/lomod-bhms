@@ -6,13 +6,27 @@ async function getLandlordByEmail(email) {
     const result = await pool.query("SELECT * FROM landlord WHERE email = $1", [
       email,
     ]);
-    
+
     return result.rows[0];
   } catch (error) {
     console.error("Error in getLandlordByEmail function:", error);
     throw error;
   }
 }
+
+const getLandlordById = async (id) => {
+  try {
+    const result = await pool.query(
+      `SELECT * FROM landlord WHERE landlord_id = $1`,
+      [id],
+    );
+
+    return result.rows[0];
+  } catch (error) {
+    console.error("Error in getLandlordById function:", error);
+    throw error;
+  }
+};
 
 const storeNewLandlord = async (email, hashed_password, accountName) => {
   try {
@@ -30,4 +44,4 @@ const storeNewLandlord = async (email, hashed_password, accountName) => {
   }
 };
 
-export { getLandlordByEmail, storeNewLandlord };
+export { getLandlordByEmail, storeNewLandlord, getLandlordById };
