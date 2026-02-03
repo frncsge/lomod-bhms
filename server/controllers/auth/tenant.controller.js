@@ -14,7 +14,7 @@ export const createTenantAccount = async (req, res) => {
   try {
     //generate username for tenant
     const randomSuffix = crypto.randomBytes(2).toString("hex");
-    const username = `${lastName.trim().replace(/\s+/g, "")}.${firstName.replace(/\s+/g, "_")}${randomSuffix}`;
+    const username = `${lastName.trim().replace(/\s+/g, "")}.${firstName.trim().replace(/\s+/g, "_")}${randomSuffix}`;
 
     //generate set password link token
     const setPasswordToken = crypto.randomBytes(32).toString("hex");
@@ -33,22 +33,23 @@ export const createTenantAccount = async (req, res) => {
     const { email: landlordEmail } = data;
 
     //send set password link through email
-    const setPasswordLink = `http://localhost:3000/auth/tenant/set-password?token=${setPasswordToken}`;
-    const tenantName = `${firstName} ${lastName}`;
-    await sendSetPasswordLink(
-      username,
-      setPasswordLink,
-      landlordEmail,
-      tenantName,
-    );
+    // const setPasswordLink = `dummylink?token=${setPasswordToken}`;
+    // const tenantName = `${firstName} ${lastName}`;
+    // await sendSetPasswordLink(
+    //   username,
+    //   setPasswordLink,
+    //   landlordEmail,
+    //   tenantName,
+    // );
 
     res
       .status(200)
-      .json({ message: `Set password link sent ${setPasswordLink}` });
+      .json({ message: `Set password link sent` });
   } catch (error) {
     console.error("Error creating new tenant account:", error);
     res.status(500).json({ message: "Server error" });
   }
 
-  //email the landlord the new tenant account credential
+  //email the landlord the new tenant account credential - done
+  //set password route
 };

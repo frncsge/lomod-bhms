@@ -28,7 +28,7 @@ const landlordSignup = async (req, res) => {
     );
 
     // send verification email
-    // const verificationLink = `http://localhost:3000/auth/landlord/verify-email?token=${verificationToken}`;
+    // const verificationLink = `dummylink?token=${verificationToken}`;
     // await sendEmailVerificationLink(verificationLink, email);
 
     res
