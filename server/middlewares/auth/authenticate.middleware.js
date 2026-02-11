@@ -9,10 +9,10 @@ export const authenticate = (req, res, next) => {
 
     //create user object key
     const { sub, role } = decoded;
-    req.user = { id: sub, role };
+    req.user = { sub, role };
 
     next();
   } catch (error) {
-    return res.status(401).json({ message: "Invalid access token" });
+    return res.status(401).json({ message: "Signing in is required" });
   }
 };
