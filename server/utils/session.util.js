@@ -1,18 +1,22 @@
-import { REDISEARCH_LANGUAGE } from "redis";
 import {
   generateAccessToken,
   generateRefreshToken,
-} from "../helpers/jwt.helper";
-import { cacheRefreshToken } from "./authCache.util";
-import { sendJwtCookies } from "./authCookies.util";
+} from "../helpers/tokens.helper.js";
+import { cacheRefreshToken } from "./cache.util.js";
+import { sendJwtCookies } from "./cookies.util.js";
 
 export const createUserSession = async (res, user) => {
-  //generate and cache jwt for user session
-  const accessToken = generateAccessToken(user);
-  const refreshToken = generateRefreshToken(user);
-  await cacheRefreshToken(refreshToken, user);
+  try {
+    //generate and cache jwt for user session
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
+    await cacheRefreshToken(refreshToken, user);
 
-  //send jwt as cookies
-  const tokens = { accessToken, refreshToken };
-  sendJwtCookies(res, tokens);
+    //send jwt as cookies
+    const tokens = { accessToken, refreshToken };
+    sendJwtCookies(res, tokens);
+  } catch (error) {
+    console.error("Error creating user session", error);
+    throw error;
+  }
 };
