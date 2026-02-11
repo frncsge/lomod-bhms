@@ -1,18 +1,22 @@
-import transporter from "../config/mailer.js";
+import transporter from "../config/mailer.config.js";
 
-export const sendEmailVerificationLink = async (
-  verificationLink,
-  receiverEmail,
-) => {
-  await transporter.sendMail({
-    from: `"Francel Boarding House" <${process.env.SMTP_USER}>`,
-    to: receiverEmail,
-    subject: "Francel BHMS Landlord Email Verification",
-    html: `<h2>Welcome to Francel BHMS!</h2>
+export const sendEmailVerificationLink = async (receiverEmail) => {
+  const verificationLink = `dummylink?token=${verificationToken}`;
+
+  try {
+    await transporter.sendMail({
+      from: `"Francel Boarding House" <${process.env.SMTP_USER}>`,
+      to: receiverEmail,
+      subject: "Francel BHMS Landlord Email Verification",
+      html: `<h2>Welcome to Francel BHMS!</h2>
              <p>Click the link below to verify your email. Expires in 3 minutes.</p>
              <a href="${verificationLink}">Verify Email</a>
       `,
-  });
+    });
+  } catch (error) {
+    console.error("Error sending email verification link", error);
+    throw error;
+  }
 };
 
 export const sendSetPasswordLink = async (
@@ -21,11 +25,12 @@ export const sendSetPasswordLink = async (
   receiverEmail,
   tenantName,
 ) => {
-  await transporter.sendMail({
-    from: `"Francel Boarding House" <${process.env.SMTP_USER}>`,
-    to: receiverEmail,
-    subject: "New Tenant Account: Set Password",
-    html: `
+  try {
+    await transporter.sendMail({
+      from: `"Francel Boarding House" <${process.env.SMTP_USER}>`,
+      to: receiverEmail,
+      subject: "New Tenant Account: Set Password",
+      html: `
       <div style="font-family: Arial, sans-serif; line-height: 1.5; color: #333;">
         <h2 style="color: #2E86C1;">New Tenant Account Created</h2>
         <p>A new tenant account has been created for <strong>${tenantName}</strong>.</p>
@@ -37,5 +42,9 @@ export const sendSetPasswordLink = async (
         <p>This link is valid for 24 hours.</p>
       </div>
     `,
-  });
+    });
+  } catch (error) {
+    console.error("Error sending set password link", error);
+    throw error;
+  }
 };
