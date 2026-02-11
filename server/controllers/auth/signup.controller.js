@@ -1,34 +1,27 @@
-import crypto from "crypto";
 import bcrypt from "bcrypt";
-import redisClient from "../../config/redis.js";
 import { getLandlordByEmail } from "../../models/landlord.model.js";
 import { sendEmailVerificationLink } from "../../helpers/mailer.helper.js";
+import { generateRandomToken } from "../../helpers/tokens.helper.js";
+import { cacheVerificationToken } from "../../utils/cache.util.js";
 
-const landlordSignup = async (req, res) => {
+export const landlordSignUp = async (req, res) => {
   const { email, password, accountName } = req.body;
-  const salt_round = 10;
+  const saltRounds = 12;
 
   try {
-    //chcek if email already exists
+    //chcek if email is already registered
     const emailTaken = await getLandlordByEmail(email);
     if (emailTaken)
       return res.status(409).json({ message: "Email already in use" });
 
     //hash password
-    const hashedPassword = await bcrypt.hash(password, salt_round);
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    //generate verification token
-    const verificationToken = crypto.randomBytes(32).toString("hex");
-
-    //cache email and hashed password for easier retrieval later
-    await redisClient.setEx(
-      verificationToken,
-      180, //3 mins expiry
-      JSON.stringify({ email, hashedPassword, accountName }),
-    );
+    const landlord = { email, hashedPassword, accountName };
+    const verificationToken = generateRandomToken();
+    await cacheVerificationToken(verificationToken, landlord);
 
     // send verification email
-    // const verificationLink = `dummylink?token=${verificationToken}`;
     // await sendEmailVerificationLink(verificationLink, email);
 
     res
@@ -39,5 +32,3 @@ const landlordSignup = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-
-export { landlordSignup };
