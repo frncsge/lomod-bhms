@@ -1,45 +1,32 @@
-import redisClient from "../../config/redis.js";
-import { storeNewLandlord } from "../../models/landlord.model.js";
 import {
-  generateAccessToken,
-  generateRefreshToken,
-} from "../../helpers/jwt.helper.js";
-import { cacheRefreshToken } from "../../utils/authCache.util.js";
-import {
-  setAccessTokenCookie,
-  setRefreshTokenCookie,
-} from "../../utils/authCookies.util.js";
+  getCachedVerificationToken,
+  delCachedVerificationToken,
+} from "../../utils/cache.util.js";
+import { createUserSession } from "../../utils/session.util.js";
 
-const verifyEmail = async (req, res) => {
-  const { token } = req.query;
+export const verifyEmail = async (req, res) => {
+  const { token: verificationToken } = req.query;
 
   try {
-    //retrieve email and password from cache
-    const data = await redisClient.get(token);
-
-    //check if cache still exists
-    if (!data)
+    //validate verification token
+    const cachedVerificationToken =
+      await getCachedVerificationToken(verificationToken);
+    if (!cachedVerificationToken)
       return res.status(400).json({ message: "Invalid or expired link" });
 
-    //parse data back to object
-    const { email, hashedPassword, accountName } = JSON.parse(data);
-
-    //email verified, create account
+    //if verification token is valid, store new landlord account to the database
+    const { email, hashedPassword, accountName } = JSON.parse(
+      cachedVerificationToken,
+    );
     const result = await storeNewLandlord(email, hashedPassword, accountName);
+
+    //then, create user session
     const { landlord_id } = result;
-
-    //delete verification token from redis after successful verification
-    await redisClient.del(token);
-
-    //create access and refresh tokens
     const user = { sub: landlord_id, role: "landlord" };
-    const accessToken = generateAccessToken(user);
-    const refreshToken = generateRefreshToken(user);
-    await cacheRefreshToken(refreshToken, user);
+    await createUserSession(res, user);
 
-    //store access token in httpOnly cookie
-    setAccessTokenCookie(res, accessToken);
-    setRefreshTokenCookie(res, refreshToken);
+    //finally, delete the used verification token
+    await delCachedVerificationToken(verificationToken);
 
     res.status(201).json({ message: "Sign up successful" });
   } catch (error) {
@@ -47,5 +34,3 @@ const verifyEmail = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-
-export { verifyEmail };
