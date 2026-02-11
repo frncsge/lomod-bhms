@@ -18,6 +18,22 @@ export const setRefreshTokenCookie = (res, refreshToken) => {
   });
 };
 
+export const sendJwtCookies = (res, tokens) => {
+  res.cookie("access_token", tokens.accessToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "none", //allow cross-origin req
+    maxAge: 15 * 60 * 1000, //15m
+  });
+
+  res.cookie("refresh_token", tokens.refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "none",
+    maxAge: 7 * 24 * 60 * 60 * 1000, //7 days
+  });
+}
+
 export const clearJwtCookies = (res) => {
   res.clearCookie("access_token", {
     httpOnly: true,
