@@ -1,45 +1,33 @@
-import redisClient from "../../config/redis.js";
+import { clearJwtCookies } from "../../utils/cookies.util.js";
 import {
-  generateAccessToken,
-  generateRefreshToken,
-} from "../../helpers/jwt.helper.js";
-import {
-  setAccessTokenCookie,
-  setRefreshTokenCookie,
-} from "../../utils/authCookies.util.js";
-import { cacheRefreshToken } from "../../utils/authCache.util.js";
-import { clearJwtCookies } from "../../utils/authCookies.util.js";
+  getCachedRefreshToken,
+  delCachedRefreshToken,
+} from "../../utils/cache.util.js";
+import { createUserSession } from "../../utils/session.util.js";
 
-export const getNewAccessToken = async (req, res) => {
+export const refreshUserSession = async (req, res) => {
   try {
     const { refresh_token } = req.cookies;
 
     //check if no refresh token
     if (!refresh_token)
-      return res.status(401).json({ message: "No refresh token provided" });
+      return res.status(401).json({ message: "Signing in is required" });
 
-    //validate refresh token
-    const data = await redisClient.get(`refreshToken:${refresh_token}`);
-    if (!data) {
+    //check if refresh token given is expired
+    const cachedRefreshToken = await getCachedRefreshToken(refresh_token);
+    if (!cachedRefreshToken) {
       //force signout
       clearJwtCookies(res);
-
-      return res.status(401).json({ message: "Session expired" });
+      return res.status(401).json({ message: "Session expired. Please sign in again" });
     }
 
-    //remove used/old refresh token from redis cache
-    await redisClient.del(`refreshToken:${refresh_token}`);
+    //remove used/old refresh token from redis cache to avoid reuse
+    await delCachedRefreshToken(refresh_token);
 
-    //generate new access and refresh token
-    const { sub, role } = JSON.parse(data);
+    //create new user session
+    const { sub, role } = JSON.parse(cachedRefreshToken);
     const user = { sub, role };
-    const newAccessToken = generateAccessToken(user);
-    const newRefreshToken = generateRefreshToken(user);
-    await cacheRefreshToken(newRefreshToken, user);
-
-    //store new access and refresh token in httpOnly cookie
-    setAccessTokenCookie(res, newAccessToken);
-    setRefreshTokenCookie(res, newRefreshToken);
+    await createUserSession(res, user);
 
     res.status(200).json({ message: "Tokens refreshed" });
   } catch (error) {
