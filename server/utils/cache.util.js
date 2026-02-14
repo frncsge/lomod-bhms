@@ -63,9 +63,21 @@ export const delCachedVerificationToken = async (token) => {
   const key = `verificationToken:${token}`;
 
   try {
-    const cachedVerificationToken = await redisClient.del(key);
+    await redisClient.del(key);
   } catch (error) {
     console.error("Error deleting cached verification token:", error);
+    throw error;
+  }
+};
+
+export const cacheSetPasswordToken = async (token, user) => {
+  const ttl = 24 * 60 * 60; //1 day
+  const key = `setPasswordToken:${token}`;
+
+  try {
+    await redisClient.setEx(key, ttl, JSON.stringify(user));
+  } catch (error) {
+    console.error("Error caching set password token:", error);
     throw error;
   }
 };
