@@ -1,4 +1,4 @@
-import pool from "../config/db.js";
+import pool from "../config/db.config.js";
 
 //for fetching the landlord using their email
 async function getLandlordByEmail(email) {
