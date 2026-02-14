@@ -1,9 +1,11 @@
 import express from "express";
-import { landlordSignUp } from "../controllers/auth/signup.controller.js";
-import { verifyEmail } from "../controllers/auth/emailVerification.controller.js";
-import { landlordSignIn } from "../controllers/auth/signin.controller.js";
-import { refreshUserSession } from "../controllers/auth/refresh.controller.js";
-import { signOut } from "../controllers/auth/signout.controller.js";
+import {
+  landlordSignUp,
+  landlordSignIn,
+  signOut,
+  refreshUserSession,
+  verifyEmail,
+} from "../controllers/auth.controller.js";
 
 const router = express.Router();
 
