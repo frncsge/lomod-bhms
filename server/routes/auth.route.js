@@ -1,7 +1,7 @@
 import express from "express";
 import {
   landlordSignUp,
-  landlordSignIn,
+  signIn,
   signOut,
   refreshUserSession,
   verifyEmail,
@@ -11,8 +11,8 @@ const router = express.Router();
 
 router.get("/landlord/verify-email", verifyEmail);
 router.post("/landlord/sign-up", landlordSignUp);
-router.post("/landlord/sign-in", landlordSignIn);
-router.post("/landlord/sign-out", signOut);
+router.post("/sign-in", signIn);
+router.post("/sign-out", signOut);
 router.post("/refresh", refreshUserSession);
 
 export default router;
