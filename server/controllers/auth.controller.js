@@ -1,5 +1,7 @@
+//to do: refactor auth based on new database schema
+
 import bcrypt from "bcrypt";
-import { getUserByIdentifier } from "../models/users.model.js";
+import { getUserByIdentifier, getUserByEmail } from "../models/users.model.js";
 import { sendEmailVerificationLink } from "../helpers/mailer.helper.js";
 import { clearJwtCookies } from "../utils/cookies.util.js";
 import { createUserSession } from "../utils/session.util.js";
@@ -7,6 +9,7 @@ import {
   delCachedRefreshToken,
   getCachedVerificationToken,
   delCachedVerificationToken,
+  getCachedRefreshToken
 } from "../utils/cache.util.js";
 
 export const landlordSignUp = async (req, res) => {
@@ -15,7 +18,7 @@ export const landlordSignUp = async (req, res) => {
 
   try {
     //chcek if email is already registered
-    const emailTaken = await getLandlordByEmail(email);
+    const emailTaken = await getUserByEmail(email);
     if (emailTaken)
       return res.status(409).json({ message: "Email already in use" });
 
@@ -23,11 +26,11 @@ export const landlordSignUp = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     // send verification email
-    const landlord = { email, hashedPassword, accountName };
-    const temporaryRemoveThis = await sendEmailVerificationLink(
+    const temporaryRemoveThis = await sendEmailVerificationLink(email, {
       email,
-      landlord,
-    );
+      hashedPassword,
+      accountName,
+    });
 
     res
       .status(200)
@@ -45,17 +48,18 @@ export const signIn = async (req, res) => {
     //check if identifier is valid (email or username)
     const user = await getUserByIdentifier(identifier);
     if (!user)
-      return res.status(401).json({ message: "Invalid username/email or password" });
+      return res
+        .status(401)
+        .json({ message: "Invalid username/email or password" });
 
     //check if passwords match
-    const match = await bcrypt.compare(password, password_hash);
+    const match = await bcrypt.compare(password, user.hashed_password);
     if (!match)
-      return res.status(401).json({ message: "Invalid username/email or password" });
+      return res
+        .status(401)
+        .json({ message: "Invalid username/email or password" });
 
-    //create user session after successful sign in
-    const { landlord_id, password_hash } = landlord;
-    // const user = { sub: landlord_id, role: "landlord" };
-    await createUserSession(res, user);
+    await createUserSession(res, { sub: user.user_id, role: user.user_role });
 
     res.status(200).json({ message: "Sign-in successful" });
   } catch (error) {
@@ -72,8 +76,8 @@ export const signOut = async (req, res) => {
     if (refresh_token) {
       await delCachedRefreshToken(refresh_token);
     }
-
     clearJwtCookies(res);
+
     res.status(200).json({ message: "Sign out successful" });
   } catch (error) {
     console.error("Error signing out:", error);
