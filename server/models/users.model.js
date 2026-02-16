@@ -14,7 +14,7 @@ export const getUserByIdentifier = (identifier) => {
   }
 };
 
-async function getUserByEmail(email) {
+export async function getUserByEmail(email) {
   try {
     const result = await pool.query("SELECT * FROM user WHERE email = $1", [
       email,
