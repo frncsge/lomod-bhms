@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import { getLandlordByEmail } from "../models/landlord.model.js";
+import { getUserByIdentifier } from "../models/users.model.js";
 import { sendEmailVerificationLink } from "../helpers/mailer.helper.js";
 import { clearJwtCookies } from "../utils/cookies.util.js";
 import { createUserSession } from "../utils/session.util.js";
@@ -38,23 +38,23 @@ export const landlordSignUp = async (req, res) => {
   }
 };
 
-export const landlordSignIn = async (req, res) => {
-  const { email, password } = req.body;
+export const signIn = async (req, res) => {
+  const { identifier, password } = req.body;
 
   try {
-    //check if email exists
-    const landlord = await getLandlordByEmail(email);
-    if (!landlord)
-      return res.status(401).json({ message: "Invalid email or password" });
+    //check if identifier is valid (email or username)
+    const user = await getUserByIdentifier(identifier);
+    if (!user)
+      return res.status(401).json({ message: "Invalid username/email or password" });
 
-    //check if password match
-    const passwordMatch = await bcrypt.compare(password, password_hash);
-    if (!passwordMatch)
-      return res.status(401).json({ message: "Invalid email or password" });
+    //check if passwords match
+    const match = await bcrypt.compare(password, password_hash);
+    if (!match)
+      return res.status(401).json({ message: "Invalid username/email or password" });
 
     //create user session after successful sign in
     const { landlord_id, password_hash } = landlord;
-    const user = { sub: landlord_id, role: "landlord" };
+    // const user = { sub: landlord_id, role: "landlord" };
     await createUserSession(res, user);
 
     res.status(200).json({ message: "Sign-in successful" });
