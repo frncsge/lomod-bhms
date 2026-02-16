@@ -1,19 +1,5 @@
 import pool from "../config/db.config.js";
 
-//for fetching the landlord using their email
-async function getLandlordByEmail(email) {
-  try {
-    const result = await pool.query("SELECT * FROM landlord WHERE email = $1", [
-      email,
-    ]);
-
-    return result.rows[0];
-  } catch (error) {
-    console.error("Error in getLandlordByEmail function:", error);
-    throw error;
-  }
-}
-
 const getLandlordById = async (id) => {
   try {
     const result = await pool.query(
