@@ -13,3 +13,16 @@ export const getUserByIdentifier = (identifier) => {
     throw error;
   }
 };
+
+async function getUserByEmail(email) {
+  try {
+    const result = await pool.query("SELECT * FROM user WHERE email = $1", [
+      email,
+    ]);
+
+    return result.rows[0];
+  } catch (error) {
+    console.error("Error in user by email function:", error);
+    throw error;
+  }
+}
