@@ -10,10 +10,10 @@ app.use(express.json());
 app.use(cookieParser());
 
 //sign up route
-app.use("/auth", authRoutes);
+app.use("/api", authRoutes);
 
 //tenant route
-app.use(tenantRoutes);
+app.use("/api", tenantRoutes);
 
 //default route for checking
 app.get("/", (req, res) =>
