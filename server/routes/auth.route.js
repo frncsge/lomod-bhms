@@ -9,10 +9,10 @@ import {
 
 const router = express.Router();
 
-router.get("/landlord/verify-email", verifyEmail);
-router.post("/landlord/sign-up", landlordSignUp);
-router.post("/sign-in", signIn);
-router.post("/sign-out", signOut);
-router.post("/refresh", refreshUserSession);
+router.get("/auth/landlord/verify-email", verifyEmail);
+router.post("/auth/landlord/sign-up", landlordSignUp);
+router.post("/auth/sign-in", signIn);
+router.post("/auth/sign-out", signOut);
+router.post("/auth/refresh", refreshUserSession);
 
 export default router;
