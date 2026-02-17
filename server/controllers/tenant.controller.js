@@ -1,40 +1,31 @@
 //future francis, this is past francis. you need to work on this file
 
-import { getLandlordById } from "../models/landlord.model.js";
+import { getUserById } from "../models/users.model.js";
 import { generateTenantUsername } from "../helpers/tenant.helper.js";
-import { generateRandomToken } from "../helpers/tokens.helper.js";
-import { cacheSetPasswordToken } from "../utils/cache.util.js";
+import { sendSetPasswordLink } from "../helpers/mailer.helper.js";
+import { capitalizeWords } from "../helpers/string.helper.js";
 
 export const createTenantAccount = async (req, res) => {
-  const { firstName, lastName, phoneNumber } = req.body;
+  const firstName = capitalizeWords(req.body.firstName);
+  const lastName = capitalizeWords(req.body.lastName);
+  const { phoneNumber } = req.body;
 
   if (!firstName || !lastName)
     return res
       .status(400)
-      .json({ message: "Complete name of the tenant is needed" });
+      .json({ message: "First and last names of tenant is required" });
 
   try {
+    const username = generateTenantUsername({ firstName, lastName });
     const newTenant = { username, firstName, lastName, phoneNumber };
-    const username = generateTenantUsername(newTenant);
-    const setPasswordToken = generateRandomToken();
-    await cacheSetPasswordToken(setPasswordToken, newTenant);
 
     //get landlord email so we can send the set password link to it
-    const landlord_id = req.user.id;
-    const data = await getLandlordById(landlord_id);
-    const { email: landlordEmail } = data;
+    const data = await getUserById(req.user.sub);
+    const { email } = data;
 
-    //send set password link through email
-    // const setPasswordLink = `dummylink?token=${setPasswordToken}`;
-    // const tenantName = `${firstName} ${lastName}`;
-    // await sendSetPasswordLink(
-    //   username,
-    //   setPasswordLink,
-    //   landlordEmail,
-    //   tenantName,
-    // );
+    const removeThis = await sendSetPasswordLink(email, newTenant);
 
-    res.status(200).json({ message: `Set password link sent` });
+    res.status(200).json({ message: `Set password link sent ${removeThis}` });
   } catch (error) {
     console.error("Error creating new tenant account:", error);
     res.status(500).json({ message: "Server error" });
