@@ -1,28 +1,81 @@
 import pool from "../config/db.config.js";
 
-export const getUserByIdentifier = (identifier) => {
+export const getUserByIdentifier = async (identifier) => {
   try {
-    const result = pool.query(
+    const result = await pool.query(
       "SELECT * FROM users WHERE email = $1 OR username = $1",
       [identifier],
     );
 
     return result.rows[0];
   } catch (error) {
-    console.error("Error in getting user by identifier:", error);
+    console.error("Error getting user by identifier:", error);
     throw error;
   }
 };
 
-export async function getUserByEmail(email) {
+export const getUserByEmail = async (email) => {
   try {
-    const result = await pool.query("SELECT * FROM user WHERE email = $1", [
+    const result = await pool.query("SELECT * FROM users WHERE email = $1", [
       email,
     ]);
 
     return result.rows[0];
   } catch (error) {
-    console.error("Error in user by email function:", error);
+    console.error("Error getting user by email:", error);
     throw error;
   }
-}
+};
+
+export const getUserById = async (id) => {
+  try {
+    const result = await pool.query("SELECT * FROM users WHERE user_id = $1", [
+      id,
+    ]);
+
+    return result.rows[0];
+  } catch (error) {
+    console.error("Error getting user by id:", error);
+    throw error;
+  }
+};
+
+export const storeNewUser = async (user) => {
+  const identifier = user.role === "landlord" ? "email" : "username";
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    //store user
+    const result = await client.query(
+      `INSERT INTO users (${identifier}, hashed_password, user_role)
+         VALUES ($1, $2, $3) RETURNING user_id`,
+      [user.identifier, user.hashedPassword, user.role],
+    );
+    const newUserId = result.rows[0].user_id;
+
+    //then, store user based on role
+    if (user.role === "landlord") {
+      await client.query("INSERT INTO landlord (user_id) VALUES ($1)", [
+        newUserId,
+      ]);
+    } else if (user.role === "tenant") {
+      await client.query(
+        "INSERT INTO tenant (user_id, first_name, last_name) VALUES ($1, $2, $3)",
+        [newUserId, user.firstName, user.lastName],
+      );
+    }
+
+    await client.query("COMMIT");
+
+    //return user id for session creation
+    return newUserId;
+  } catch (error) {
+    console.error("Error in storeNewLandlord function:", error);
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
+};

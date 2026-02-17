@@ -14,20 +14,4 @@ const getLandlordById = async (id) => {
   }
 };
 
-const storeNewLandlord = async (email, hashed_password, accountName) => {
-  try {
-    const result = await pool.query(
-      `INSERT INTO landlord (email, password_hash, account_name) 
-      VALUES ($1, $2, $3)
-      RETURNING landlord_id`,
-      [email, hashed_password, accountName],
-    );
-
-    return result.rows[0];
-  } catch (error) {
-    console.error("Error in storeNewLandlord function:", error);
-    throw error;
-  }
-};
-
-export { getLandlordByEmail, storeNewLandlord, getLandlordById };
+export { getLandlordById };
