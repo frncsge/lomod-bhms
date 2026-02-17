@@ -1,7 +1,12 @@
 //to do: refactor auth based on new database schema
+//shcema also isnt done
 
-import bcrypt from "bcrypt";
-import { getUserByIdentifier, getUserByEmail } from "../models/users.model.js";
+import bcrypt, { hash } from "bcrypt";
+import {
+  getUserByIdentifier,
+  getUserByEmail,
+  storeNewUser,
+} from "../models/users.model.js";
 import { sendEmailVerificationLink } from "../helpers/mailer.helper.js";
 import { clearJwtCookies } from "../utils/cookies.util.js";
 import { createUserSession } from "../utils/session.util.js";
@@ -9,11 +14,11 @@ import {
   delCachedRefreshToken,
   getCachedVerificationToken,
   delCachedVerificationToken,
-  getCachedRefreshToken
+  getCachedRefreshToken,
 } from "../utils/cache.util.js";
 
 export const landlordSignUp = async (req, res) => {
-  const { email, password, accountName } = req.body;
+  const { email, password } = req.body;
   const saltRounds = 12;
 
   try {
@@ -26,11 +31,8 @@ export const landlordSignUp = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     // send verification email
-    const temporaryRemoveThis = await sendEmailVerificationLink(email, {
-      email,
-      hashedPassword,
-      accountName,
-    });
+    const newLandlord = { email, hashedPassword, role: "landlord" };
+    const temporaryRemoveThis = await sendEmailVerificationLink(newLandlord);
 
     res
       .status(200)
@@ -61,9 +63,9 @@ export const signIn = async (req, res) => {
 
     await createUserSession(res, { sub: user.user_id, role: user.user_role });
 
-    res.status(200).json({ message: "Sign-in successful" });
+    res.status(200).json({ message: "Sign in successful" });
   } catch (error) {
-    console.error("Error occured while signing in landlord:", error);
+    console.error("Error occured while signing in:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -96,14 +98,15 @@ export const verifyEmail = async (req, res) => {
       return res.status(400).json({ message: "Invalid or expired link" });
 
     //if verification token is valid, store new landlord account to the database
-    const { email, hashedPassword, accountName } = JSON.parse(
-      cachedVerificationToken,
-    );
-    const result = await storeNewLandlord(email, hashedPassword, accountName);
+    const { email, hashedPassword, role } = JSON.parse(cachedVerificationToken);
+    const newUserId = await storeNewUser({
+      identifier: email,
+      hashedPassword,
+      role,
+    });
 
     //then, create user session
-    const { landlord_id } = result;
-    const user = { sub: landlord_id, role: "landlord" };
+    const user = { sub: newUserId, role };
     await createUserSession(res, user);
 
     //finally, delete the used verification token
