@@ -42,16 +42,17 @@ export const getUserById = async (id) => {
 
 export const storeNewUser = async (user) => {
   const identifier = user.role === "landlord" ? "email" : "username";
+  const status = user.role === "landlord" ? "active" : "pending";
   const client = await pool.connect();
 
   try {
     await client.query("BEGIN");
 
-    //store user
+    //store user. status for tenant is set to pending since tenants need to set their password
     const result = await client.query(
-      `INSERT INTO users (${identifier}, hashed_password, user_role)
-         VALUES ($1, $2, $3) RETURNING user_id`,
-      [user.identifier, user.hashedPassword, user.role],
+      `INSERT INTO users (${identifier}, hashed_password, user_role, status)
+         VALUES ($1, $2, $3, $4) RETURNING user_id`,
+      [user.identifier, user.hashedPassword, user.role, status],
     );
     const newUserId = result.rows[0].user_id;
 
