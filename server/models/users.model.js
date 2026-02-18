@@ -70,7 +70,6 @@ export const storeNewUser = async (user) => {
 
     await client.query("COMMIT");
 
-    //return user id for session creation
     return newUserId;
   } catch (error) {
     console.error("Error in storeNewLandlord function:", error);
@@ -78,5 +77,17 @@ export const storeNewUser = async (user) => {
     throw error;
   } finally {
     client.release();
+  }
+};
+
+export const updateUserPassword = async (id, hashedPassword) => {
+  try {
+    await pool.query(
+      "UPDATE users SET hashed_password = $1, status = 'active' WHERE user_id = $2",
+      [hashedPassword, id],
+    );
+  } catch (error) {
+    console.error("Error in updateUserPassword function:", error);
+    throw error;
   }
 };
