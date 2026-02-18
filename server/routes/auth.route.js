@@ -7,7 +7,7 @@ import {
   verifyEmail,
 } from "../controllers/auth.controller.js";
 import { authenticateUser } from "../middlewares/auth.middleware.js";
-import { createTenantAccount } from "../controllers/auth.controller.js";
+import { createTenantAccount, setTenantAccountPassword } from "../controllers/auth.controller.js";
 
 const router = express.Router();
 
@@ -17,6 +17,7 @@ router.post("/auth/sign-in", signIn);
 router.post("/auth/sign-out", signOut);
 router.post("/auth/refresh", refreshUserSession);
 
-router.post("/tenant", authenticateUser, createTenantAccount);
+router.post("/auth/tenant", authenticateUser, createTenantAccount);
+router.patch("/auth/tenant/password", setTenantAccountPassword);
 
 export default router;
