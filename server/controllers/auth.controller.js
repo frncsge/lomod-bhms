@@ -1,12 +1,13 @@
 //to do: refactor auth based on new database schema
 //shcema also isnt done
 
-import bcrypt, { hash } from "bcrypt";
+import bcrypt from "bcrypt";
 import {
   getUserByIdentifier,
   getUserByEmail,
   getUserById,
   storeNewUser,
+  updateUserPassword,
 } from "../models/users.model.js";
 import { sendEmailVerificationLink } from "../helpers/mailer.helper.js";
 import { clearJwtCookies } from "../utils/cookies.util.js";
@@ -16,14 +17,17 @@ import {
   getCachedVerificationToken,
   delCachedVerificationToken,
   getCachedRefreshToken,
+  getCachedSetPasswordToken,
+  delCachedSetPasswordToken,
 } from "../utils/cache.util.js";
 import { generateTenantUsername } from "../helpers/tenant.helper.js";
 import { sendSetPasswordLink } from "../helpers/mailer.helper.js";
 import { capitalizeWords } from "../helpers/string.helper.js";
 
+const saltRounds = 12;
+
 export const landlordSignUp = async (req, res) => {
   const { email, password } = req.body;
-  const saltRounds = 12;
 
   try {
     //chcek if email is already registered
@@ -189,6 +193,37 @@ export const createTenantAccount = async (req, res) => {
     res.status(200).json({ message: `Set password link sent ${removeThis}` });
   } catch (error) {
     console.error("Error creating new tenant account:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const setTenantAccountPassword = async (req, res) => {
+  const { token: setPasswordToken } = req.query;
+  const password = req.body?.password?.trim();
+
+  try {
+    const value = await getCachedSetPasswordToken(setPasswordToken);
+
+    if (!value)
+      return res.status(400).json({ message: "Invalid or expired link" });
+
+    if (!password || password.length < 8)
+      return res
+        .status(400)
+        .json({ message: "Password must be at least 8 characters" });
+
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    const userId = JSON.parse(value);
+    await updateUserPassword(userId, hashedPassword);
+
+    await delCachedSetPasswordToken(setPasswordToken);
+
+    res
+      .status(200)
+      .json({ message: "Password set successfully. You can now login" });
+  } catch (error) {
+    console.error("Error setting password for new tenant account:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
