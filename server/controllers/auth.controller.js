@@ -5,6 +5,7 @@ import bcrypt, { hash } from "bcrypt";
 import {
   getUserByIdentifier,
   getUserByEmail,
+  getUserById,
   storeNewUser,
 } from "../models/users.model.js";
 import { sendEmailVerificationLink } from "../helpers/mailer.helper.js";
@@ -16,6 +17,9 @@ import {
   delCachedVerificationToken,
   getCachedRefreshToken,
 } from "../utils/cache.util.js";
+import { generateTenantUsername } from "../helpers/tenant.helper.js";
+import { sendSetPasswordLink } from "../helpers/mailer.helper.js";
+import { capitalizeWords } from "../helpers/string.helper.js";
 
 export const landlordSignUp = async (req, res) => {
   const { email, password } = req.body;
@@ -148,6 +152,43 @@ export const refreshUserSession = async (req, res) => {
     res.status(200).json({ message: "Tokens refreshed" });
   } catch (error) {
     console.error("Error getting new access token:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const createTenantAccount = async (req, res) => {
+  const firstName = capitalizeWords(req.body.firstName);
+  const lastName = capitalizeWords(req.body.lastName);
+  const { phoneNumber } = req.body;
+
+  if (!firstName || !lastName)
+    return res
+      .status(400)
+      .json({ message: "First and last names of tenant is required" });
+
+  try {
+    const username = generateTenantUsername({ firstName, lastName });
+    const newTenant = {
+      identifier: username,
+      firstName,
+      lastName,
+      phoneNumber,
+      role: "tenant",
+    };
+
+    //store new tenant as pending, and get the email of the landlord
+    const [newUserId, user] = await Promise.all([
+      storeNewUser(newTenant),
+      getUserById(req.user.sub),
+    ]);
+
+    const { email } = user;
+
+    const removeThis = await sendSetPasswordLink(email, newUserId);
+
+    res.status(200).json({ message: `Set password link sent ${removeThis}` });
+  } catch (error) {
+    console.error("Error creating new tenant account:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
