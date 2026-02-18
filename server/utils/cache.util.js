@@ -81,3 +81,26 @@ export const cacheSetPasswordToken = async (token, user) => {
     throw error;
   }
 };
+
+export const getCachedSetPasswordToken = async (token) => {
+  const key = `setPasswordToken:${token}`;
+
+  try {
+    const cachedSetPasswordToken = await redisClient.get(key);
+    return cachedSetPasswordToken;
+  } catch (error) {
+    console.error("Error getting cached set password token:", error);
+    throw error;
+  }
+};
+
+export const delCachedSetPasswordToken = async (token) => {
+  const key = `setPasswordToken:${token}`;
+
+  try {
+    await redisClient.del(key);
+  } catch (error) {
+    console.error("Error deleting cached set password token:", error);
+    throw error;
+  }
+};
