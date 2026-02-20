@@ -19,6 +19,8 @@ import {
   getCachedRefreshToken,
   getCachedSetPasswordToken,
   delCachedSetPasswordToken,
+  setCreateTenantAccCd,
+  getCreateTenantAccCd,
 } from "../utils/cache.util.js";
 import { generateTenantUsername } from "../helpers/tenant.helper.js";
 import { sendSetPasswordLink } from "../helpers/mailer.helper.js";
@@ -165,6 +167,15 @@ export const createTenantAccount = async (req, res) => {
   const lastName = capitalizeWords(req.body.lastName);
   const { phoneNumber } = req.body;
 
+  //check for tenant acc creation cooldown
+  const cooldown = await getCreateTenantAccCd(req.user.sub);
+  if (cooldown > 0)
+    return res
+      .status(429)
+      .json({
+        message: `Please wait after ${cooldown}s to create another tenant account`,
+      });
+
   if (!firstName || !lastName)
     return res
       .status(400)
@@ -180,15 +191,17 @@ export const createTenantAccount = async (req, res) => {
       role: "tenant",
     };
 
-    //store new tenant as pending, and get the email of the landlord
     const [newUserId, user] = await Promise.all([
-      storeNewUser(newTenant),
-      getUserById(req.user.sub),
+      storeNewUser(newTenant), //store new tenant with 'pending' status
+      getUserById(req.user.sub), //get the landlord's email
     ]);
 
     const { email } = user;
 
     const removeThis = await sendSetPasswordLink(email, newUserId);
+
+    //tenant acc creation cooldown
+    await setCreateTenantAccCd(req.user.sub);
 
     res.status(200).json({ message: `Set password link sent ${removeThis}` });
   } catch (error) {
