@@ -1,5 +1,6 @@
 import redisClient from "../config/redis.config.js";
 
+//refresh token
 export const cacheRefreshToken = async (refreshToken, user) => {
   const ttl = 7 * 24 * 60 * 60; //7 days time-to-live
   const key = `refreshToken:${refreshToken}`;
@@ -11,7 +12,6 @@ export const cacheRefreshToken = async (refreshToken, user) => {
     throw error;
   }
 };
-
 export const getCachedRefreshToken = async (refreshToken) => {
   const key = `refreshToken:${refreshToken}`;
 
@@ -23,7 +23,6 @@ export const getCachedRefreshToken = async (refreshToken) => {
     throw error;
   }
 };
-
 export const delCachedRefreshToken = async (refreshToken) => {
   const key = `refreshToken:${refreshToken}`;
 
@@ -35,6 +34,7 @@ export const delCachedRefreshToken = async (refreshToken) => {
   }
 };
 
+//verification token
 export const cacheVerificationToken = async (token, user) => {
   const ttl = 180; //3 mins verification token expiry
   const key = `verificationToken:${token}`;
@@ -46,7 +46,6 @@ export const cacheVerificationToken = async (token, user) => {
     throw error;
   }
 };
-
 export const getCachedVerificationToken = async (token) => {
   const key = `verificationToken:${token}`;
 
@@ -58,7 +57,6 @@ export const getCachedVerificationToken = async (token) => {
     throw error;
   }
 };
-
 export const delCachedVerificationToken = async (token) => {
   const key = `verificationToken:${token}`;
 
@@ -70,6 +68,7 @@ export const delCachedVerificationToken = async (token) => {
   }
 };
 
+//set password token
 export const cacheSetPasswordToken = async (token, user) => {
   const ttl = 24 * 60 * 60; //1 day
   const key = `setPasswordToken:${token}`;
@@ -81,7 +80,6 @@ export const cacheSetPasswordToken = async (token, user) => {
     throw error;
   }
 };
-
 export const getCachedSetPasswordToken = async (token) => {
   const key = `setPasswordToken:${token}`;
 
@@ -93,7 +91,6 @@ export const getCachedSetPasswordToken = async (token) => {
     throw error;
   }
 };
-
 export const delCachedSetPasswordToken = async (token) => {
   const key = `setPasswordToken:${token}`;
 
@@ -101,6 +98,31 @@ export const delCachedSetPasswordToken = async (token) => {
     await redisClient.del(key);
   } catch (error) {
     console.error("Error deleting cached set password token:", error);
+    throw error;
+  }
+};
+
+//cooldowns
+export const setCreateTenantAccCd = async (id) => {
+  const key = `createTenantCd:${id}`;
+  const ttl = 30; //30 seconds
+
+  try {
+    await redisClient.setEx(key, ttl, "Tenant account creation cooldown");
+  } catch (error) {
+    console.error("Error setting tenant account creation cooldown:", error);
+    throw error;
+  }
+};
+
+export const getCreateTenantAccCd = async (id) => {
+  const key = `createTenantCd:${id}`;
+
+  try {
+    const cooldown = await redisClient.ttl(key);
+    return cooldown;
+  } catch (error) {
+    console.error("Error getting tenant account creation cooldown:", error);
     throw error;
   }
 };
