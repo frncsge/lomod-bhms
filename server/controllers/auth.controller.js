@@ -19,8 +19,7 @@ import {
   getCachedRefreshToken,
   getCachedSetPasswordToken,
   delCachedSetPasswordToken,
-  setCreateTenantAccCd,
-  getCreateTenantAccCd,
+  tenantAccCreationCd,
 } from "../utils/cache.util.js";
 import { generateTenantUsername } from "../helpers/tenant.helper.js";
 import { sendSetPasswordLink } from "../helpers/mailer.helper.js";
@@ -168,13 +167,11 @@ export const createTenantAccount = async (req, res) => {
   const { phoneNumber } = req.body;
 
   //check for tenant acc creation cooldown
-  const cooldown = await getCreateTenantAccCd(req.user.sub);
+  const cooldown = await tenantAccCreationCd("get", req.user.sub);
   if (cooldown > 0)
-    return res
-      .status(429)
-      .json({
-        message: `Please wait after ${cooldown}s to create another tenant account`,
-      });
+    return res.status(429).json({
+      message: `Please wait after ${cooldown}s to create another tenant account`,
+    });
 
   if (!firstName || !lastName)
     return res
@@ -201,7 +198,7 @@ export const createTenantAccount = async (req, res) => {
     const removeThis = await sendSetPasswordLink(email, newUserId);
 
     //tenant acc creation cooldown
-    await setCreateTenantAccCd(req.user.sub);
+    await tenantAccCreationCd("set", req.user.sub);
 
     res.status(200).json({ message: `Set password link sent ${removeThis}` });
   } catch (error) {
