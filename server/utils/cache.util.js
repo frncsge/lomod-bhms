@@ -103,26 +103,21 @@ export const delCachedSetPasswordToken = async (token) => {
 };
 
 //cooldowns
-export const setCreateTenantAccCd = async (id) => {
+export const tenantAccCreationCd = async (action = "set", id) => {
   const key = `createTenantCd:${id}`;
   const ttl = 30; //30 seconds
 
   try {
-    await redisClient.setEx(key, ttl, "Tenant account creation cooldown");
-  } catch (error) {
-    console.error("Error setting tenant account creation cooldown:", error);
-    throw error;
-  }
-};
+    if (action === "set") {
+      await redisClient.setEx(key, ttl, "Tenant account creation cooldown");
+    }
 
-export const getCreateTenantAccCd = async (id) => {
-  const key = `createTenantCd:${id}`;
-
-  try {
-    const cooldown = await redisClient.ttl(key);
-    return cooldown;
+    if (action === "get") {
+      const cooldown = await redisClient.ttl(key);
+      return cooldown;
+    }
   } catch (error) {
-    console.error("Error getting tenant account creation cooldown:", error);
+    console.error("Error on tenant account creation cooldown:", error);
     throw error;
   }
 };
