@@ -1,5 +1,8 @@
 import transporter from "../config/mailer.config.js";
-import { cacheVerificationToken, cacheSetPasswordToken } from "../utils/cache.util.js";
+import {
+  cacheVerificationToken,
+  setPasswordToken,
+} from "../utils/cache.util.js";
 import { generateRandomToken } from "./tokens.helper.js";
 
 export const sendEmailVerificationLink = async (user) => {
@@ -26,8 +29,8 @@ export const sendEmailVerificationLink = async (user) => {
 };
 
 export const sendSetPasswordLink = async (email, user) => {
-  const setPasswordToken = generateRandomToken();
-  const setPasswordLink = `dummylink?token=${setPasswordToken}`;
+  const token = generateRandomToken();
+  const setPasswordLink = `dummylink?token=${token}`;
 
   try {
     // await transporter.sendMail({
@@ -48,8 +51,8 @@ export const sendSetPasswordLink = async (email, user) => {
     // `,
     // });
 
-    await cacheSetPasswordToken(setPasswordToken, user);
-    return setPasswordToken; //for testing purposes
+    await setPasswordToken("set", token, user);
+    return token; //for testing purposes
   } catch (error) {
     console.error("Error sending set password link", error);
     throw error;
