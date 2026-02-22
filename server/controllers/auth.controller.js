@@ -17,8 +17,7 @@ import {
   getCachedVerificationToken,
   delCachedVerificationToken,
   getCachedRefreshToken,
-  getCachedSetPasswordToken,
-  delCachedSetPasswordToken,
+  setPasswordToken,
   tenantAccCreationCd,
 } from "../utils/cache.util.js";
 import { generateTenantUsername } from "../helpers/tenant.helper.js";
@@ -208,11 +207,11 @@ export const createTenantAccount = async (req, res) => {
 };
 
 export const setTenantAccountPassword = async (req, res) => {
-  const { token: setPasswordToken } = req.query;
+  const { token } = req.query;
   const password = req.body?.password?.trim();
 
   try {
-    const value = await getCachedSetPasswordToken(setPasswordToken);
+    const value = await setPasswordToken("get", token);
 
     if (!value)
       return res.status(400).json({ message: "Invalid or expired link" });
@@ -227,7 +226,7 @@ export const setTenantAccountPassword = async (req, res) => {
     const userId = JSON.parse(value);
     await updateUserPassword(userId, hashedPassword);
 
-    await delCachedSetPasswordToken(setPasswordToken);
+    await setPasswordToken("del", token);
 
     res
       .status(200)
