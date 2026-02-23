@@ -13,10 +13,9 @@ import { sendEmailVerificationLink } from "../helpers/mailer.helper.js";
 import { clearJwtCookies } from "../utils/cookies.util.js";
 import { createUserSession } from "../utils/session.util.js";
 import {
-  delCachedRefreshToken,
+  refreshTokenCache,
   getCachedVerificationToken,
   delCachedVerificationToken,
-  getCachedRefreshToken,
   setPasswordToken,
   tenantAccCreationCd,
 } from "../utils/cache.util.js";
@@ -84,7 +83,7 @@ export const signOut = async (req, res) => {
 
     //delete refresh token from redis
     if (refresh_token) {
-      await delCachedRefreshToken(refresh_token);
+      await refreshTokenCache("del", refresh_token);
     }
     clearJwtCookies(res);
 
@@ -136,7 +135,7 @@ export const refreshUserSession = async (req, res) => {
       return res.status(401).json({ message: "Signing in is required" });
 
     //check if refresh token given is expired
-    const cachedRefreshToken = await getCachedRefreshToken(refresh_token);
+    const cachedRefreshToken = await refreshTokenCache("get", refresh_token);
     if (!cachedRefreshToken) {
       //force signout
       clearJwtCookies(res);
@@ -146,7 +145,7 @@ export const refreshUserSession = async (req, res) => {
     }
 
     //remove used/old refresh token from redis cache to avoid reuse
-    await delCachedRefreshToken(refresh_token);
+    await refreshTokenCache("del", refresh_token);
 
     //create new user session
     const { sub, role } = JSON.parse(cachedRefreshToken);

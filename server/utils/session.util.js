@@ -2,7 +2,7 @@ import {
   generateAccessToken,
   generateRefreshToken,
 } from "../helpers/tokens.helper.js";
-import { cacheRefreshToken } from "./cache.util.js";
+import { refreshTokenCache } from "./cache.util.js";
 import { sendJwtCookies } from "./cookies.util.js";
 
 export const createUserSession = async (res, user) => {
@@ -10,7 +10,7 @@ export const createUserSession = async (res, user) => {
     //generate and cache jwt for user session
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
-    await cacheRefreshToken(refreshToken, user);
+    await refreshTokenCache("set", refreshToken, user);
 
     //send jwt as cookies
     const tokens = { accessToken, refreshToken };
