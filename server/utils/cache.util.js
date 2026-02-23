@@ -1,35 +1,22 @@
 import redisClient from "../config/redis.config.js";
 
 //refresh token
-export const cacheRefreshToken = async (refreshToken, user) => {
+export const refreshTokenCache = async (action = "set", token, user) => {
   const ttl = 7 * 24 * 60 * 60; //7 days time-to-live
-  const key = `refreshToken:${refreshToken}`;
+  const key = `refreshToken:${token}`;
 
   try {
-    await redisClient.setEx(key, ttl, JSON.stringify(user));
-  } catch (error) {
-    console.error("Error caching refresh token:", error);
-    throw error;
-  }
-};
-export const getCachedRefreshToken = async (refreshToken) => {
-  const key = `refreshToken:${refreshToken}`;
+    if (action === "set")
+      await redisClient.setEx(key, ttl, JSON.stringify(user));
 
-  try {
-    const cachedRefreshToken = await redisClient.get(key);
-    return cachedRefreshToken;
-  } catch (error) {
-    console.error("Error getting cached refresh token:", error);
-    throw error;
-  }
-};
-export const delCachedRefreshToken = async (refreshToken) => {
-  const key = `refreshToken:${refreshToken}`;
+    if (action === "get") {
+      const cachedRefreshToken = await redisClient.get(key);
+      return cachedRefreshToken;
+    }
 
-  try {
-    await redisClient.del(key);
+    if (action === "del") await redisClient.del(key);
   } catch (error) {
-    console.error("Error getting cached refresh token:", error);
+    console.error("Error in refresh token cache:", error);
     throw error;
   }
 };
