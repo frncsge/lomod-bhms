@@ -10,7 +10,7 @@ export const createUserSession = async (res, user) => {
     //generate and cache jwt for user session
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
-    await refreshTokenCache("set", refreshToken, user);
+    await refreshTokenCache({ token: refreshToken, user });
 
     //send jwt as cookies
     const tokens = { accessToken, refreshToken };
