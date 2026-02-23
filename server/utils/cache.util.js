@@ -1,7 +1,7 @@
 import redisClient from "../config/redis.config.js";
 
 //refresh token
-export const refreshTokenCache = async (action = "set", token, user) => {
+export const refreshTokenCache = async ({ action = "set", token, user }) => {
   const ttl = 7 * 24 * 60 * 60; //7 days time-to-live
   const key = `refreshToken:${token}`;
 
@@ -21,42 +21,33 @@ export const refreshTokenCache = async (action = "set", token, user) => {
   }
 };
 
-//verification token
-export const cacheVerificationToken = async (token, user) => {
+//email verification token
+export const verificationTokenCache = async ({
+  action = "set",
+  token,
+  user,
+}) => {
   const ttl = 180; //3 mins verification token expiry
   const key = `verificationToken:${token}`;
 
   try {
-    await redisClient.setEx(key, ttl, JSON.stringify(user));
-  } catch (error) {
-    console.error("Error caching verification token:", error);
-    throw error;
-  }
-};
-export const getCachedVerificationToken = async (token) => {
-  const key = `verificationToken:${token}`;
+    if (action === "set")
+      await redisClient.setEx(key, ttl, JSON.stringify(user));
 
-  try {
-    const cachedVerificationToken = await redisClient.get(key);
-    return cachedVerificationToken;
-  } catch (error) {
-    console.error("Error getting cached verification token:", error);
-    throw error;
-  }
-};
-export const delCachedVerificationToken = async (token) => {
-  const key = `verificationToken:${token}`;
+    if (action === "get") {
+      const cachedVerificationToken = await redisClient.get(key);
+      return cachedVerificationToken;
+    }
 
-  try {
-    await redisClient.del(key);
+    if (action === "del") await redisClient.del(key);
   } catch (error) {
-    console.error("Error deleting cached verification token:", error);
+    console.error("Error in verification token caching:", error);
     throw error;
   }
 };
 
 //set password token
-export const setPasswordToken = async (action = "set", token, user) => {
+export const setPasswordToken = async ({ action = "set", token, user }) => {
   const ttl = 24 * 60 * 60; //1 day
   const key = `setPasswordToken:${token}`;
 
@@ -80,7 +71,7 @@ export const setPasswordToken = async (action = "set", token, user) => {
 };
 
 //tenant acc creation cooldown
-export const tenantAccCreationCd = async (action = "set", id) => {
+export const tenantAccCreationCd = async ({ action = "set", id }) => {
   const key = `createTenantCd:${id}`;
   const ttl = 30; //30 seconds
 
