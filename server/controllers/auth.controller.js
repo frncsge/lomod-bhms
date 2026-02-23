@@ -14,8 +14,7 @@ import { clearJwtCookies } from "../utils/cookies.util.js";
 import { createUserSession } from "../utils/session.util.js";
 import {
   refreshTokenCache,
-  getCachedVerificationToken,
-  delCachedVerificationToken,
+  verificationTokenCache,
   setPasswordToken,
   tenantAccCreationCd,
 } from "../utils/cache.util.js";
@@ -56,7 +55,7 @@ export const signIn = async (req, res) => {
   try {
     //check if identifier is valid (email or username)
     const user = await getUserByIdentifier(identifier);
-    if (!user)
+    if (!user || user.status === "pending")
       return res
         .status(401)
         .json({ message: "Invalid username/email or password" });
@@ -83,7 +82,7 @@ export const signOut = async (req, res) => {
 
     //delete refresh token from redis
     if (refresh_token) {
-      await refreshTokenCache("del", refresh_token);
+      await refreshTokenCache({ action: "del", token: refresh_token });
     }
     clearJwtCookies(res);
 
@@ -95,12 +94,15 @@ export const signOut = async (req, res) => {
 };
 
 export const verifyEmail = async (req, res) => {
-  const { token: verificationToken } = req.query;
+  const { token } = req.query;
 
   try {
     //validate verification token
-    const cachedVerificationToken =
-      await getCachedVerificationToken(verificationToken);
+    const cachedVerificationToken = await verificationTokenCache({
+      action: "get",
+      token,
+    });
+
     if (!cachedVerificationToken)
       return res.status(400).json({ message: "Invalid or expired link" });
 
@@ -117,7 +119,7 @@ export const verifyEmail = async (req, res) => {
     await createUserSession(res, user);
 
     //finally, delete the used verification token
-    await delCachedVerificationToken(verificationToken);
+    await verificationTokenCache({ token });
 
     res.status(201).json({ message: "Sign up successful" });
   } catch (error) {
@@ -135,7 +137,11 @@ export const refreshUserSession = async (req, res) => {
       return res.status(401).json({ message: "Signing in is required" });
 
     //check if refresh token given is expired
-    const cachedRefreshToken = await refreshTokenCache("get", refresh_token);
+    const cachedRefreshToken = await refreshTokenCache({
+      action: "get",
+      token: refresh_token,
+    });
+
     if (!cachedRefreshToken) {
       //force signout
       clearJwtCookies(res);
@@ -145,7 +151,7 @@ export const refreshUserSession = async (req, res) => {
     }
 
     //remove used/old refresh token from redis cache to avoid reuse
-    await refreshTokenCache("del", refresh_token);
+    await refreshTokenCache({ action: "del", token: refresh_token });
 
     //create new user session
     const { sub, role } = JSON.parse(cachedRefreshToken);
@@ -165,7 +171,11 @@ export const createTenantAccount = async (req, res) => {
   const { phoneNumber } = req.body;
 
   //check for tenant acc creation cooldown
-  const cooldown = await tenantAccCreationCd("get", req.user.sub);
+  const cooldown = await tenantAccCreationCd({
+    action: "get",
+    id: req.user.sub,
+  });
+
   if (cooldown > 0)
     return res.status(429).json({
       message: `Please wait after ${cooldown}s to create another tenant account`,
@@ -196,7 +206,7 @@ export const createTenantAccount = async (req, res) => {
     const removeThis = await sendSetPasswordLink(email, newUserId);
 
     //tenant acc creation cooldown
-    await tenantAccCreationCd("set", req.user.sub);
+    await tenantAccCreationCd({ id: req.user.sub });
 
     res.status(200).json({ message: `Set password link sent ${removeThis}` });
   } catch (error) {
@@ -210,7 +220,7 @@ export const setTenantAccountPassword = async (req, res) => {
   const password = req.body?.password?.trim();
 
   try {
-    const value = await setPasswordToken("get", token);
+    const value = await setPasswordToken({ action: "get", token });
 
     if (!value)
       return res.status(400).json({ message: "Invalid or expired link" });
@@ -225,7 +235,7 @@ export const setTenantAccountPassword = async (req, res) => {
     const userId = JSON.parse(value);
     await updateUserPassword(userId, hashedPassword);
 
-    await setPasswordToken("del", token);
+    await setPasswordToken({ action: "del", token });
 
     res
       .status(200)
