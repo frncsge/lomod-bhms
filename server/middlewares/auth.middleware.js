@@ -16,3 +16,17 @@ export const authenticateUser = (req, res, next) => {
     return res.status(401).json({ message: "Signing in is required" });
   }
 };
+
+export const authorizeUser =
+  (allowedRoles = []) =>
+  (req, res, next) => {
+    const { role } = req.user;
+
+    if (allowedRoles.includes(role)) {
+      return next();
+    }
+
+    res
+      .status(403)
+      .json({ message: "You are not allowed to access this resource" });
+  };
