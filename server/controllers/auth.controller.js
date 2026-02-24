@@ -17,7 +17,7 @@ import {
   verificationTokenCache,
   setPasswordToken,
   tenantAccCreationCd,
-} from "../utils/cache.util.js";
+} from "../utils/tokenCache.util.js";
 import { generateTenantUsername } from "../helpers/tenant.helper.js";
 import { sendSetPasswordLink } from "../helpers/mailer.helper.js";
 import { capitalizeWords } from "../helpers/string.helper.js";

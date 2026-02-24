@@ -2,7 +2,7 @@ import transporter from "../config/mailer.config.js";
 import {
   verificationTokenCache,
   setPasswordToken,
-} from "../utils/cache.util.js";
+} from "../utils/tokenCache.util.js";
 import { generateRandomToken } from "./tokens.helper.js";
 
 export const sendEmailVerificationLink = async (user) => {

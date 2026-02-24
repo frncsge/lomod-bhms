@@ -2,7 +2,7 @@ import {
   generateAccessToken,
   generateRefreshToken,
 } from "../helpers/tokens.helper.js";
-import { refreshTokenCache } from "./cache.util.js";
+import { refreshTokenCache } from "./tokenCache.util.js";
 import { sendJwtCookies } from "./cookies.util.js";
 
 export const createUserSession = async (res, user) => {
