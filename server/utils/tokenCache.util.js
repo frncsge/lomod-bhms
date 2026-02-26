@@ -73,7 +73,7 @@ export const setPasswordToken = async ({ action = "set", token, user }) => {
 //tenant acc creation cooldown
 export const tenantAccCreationCd = async ({ action = "set", id }) => {
   const key = `createTenantCd:${id}`;
-  const ttl = 30; //30 seconds
+  const ttl = 30; //seconds
 
   try {
     if (action === "set") {
@@ -86,6 +86,25 @@ export const tenantAccCreationCd = async ({ action = "set", id }) => {
     }
   } catch (error) {
     console.error("Error in tenant account creation cooldown:", error);
+    throw error;
+  }
+};
+
+export const emailVerificationCd = async ({ action = "set", email }) => {
+  const key = `emailVerificationCd:${email}`;
+  const ttl = 30; //seconds
+
+  try {
+    if (action === "set") {
+      await redisClient.setEx(key, ttl, "Email verification cooldown");
+    }
+
+    if (action === "get") {
+      const cooldown = await redisClient.ttl(key);
+      return cooldown;
+    }
+  } catch (error) {
+    console.error("Error in email verification cooldown:", error);
     throw error;
   }
 };
