@@ -17,6 +17,7 @@ import {
   verificationTokenCache,
   setPasswordToken,
   tenantAccCreationCd,
+  emailVerificationCd,
 } from "../utils/tokenCache.util.js";
 import { generateTenantUsername } from "../helpers/tenant.helper.js";
 import { sendSetPasswordLink } from "../helpers/mailer.helper.js";
@@ -28,6 +29,17 @@ export const landlordSignUp = async (req, res) => {
   const { email, password } = req.body;
 
   try {
+    //check for cooldown
+    const cooldown = await emailVerificationCd({
+      action: "get",
+      email,
+    });
+
+    if (cooldown > 0)
+      return res.status(429).json({
+        message: `Please wait after ${cooldown}s to sign up again`,
+      });
+
     //chcek if email is already registered
     const emailTaken = await getUserByEmail(email);
     if (emailTaken)
@@ -36,9 +48,12 @@ export const landlordSignUp = async (req, res) => {
     //hash password
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    // send verification email
+    //send verification email
     const newLandlord = { email, hashedPassword, role: "landlord" };
     const temporaryRemoveThis = await sendEmailVerificationLink(newLandlord);
+
+    //set sign up cooldown
+    await emailVerificationCd({ email });
 
     res
       .status(200)
