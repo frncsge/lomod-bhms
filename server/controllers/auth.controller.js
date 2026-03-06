@@ -134,7 +134,7 @@ export const verifyEmail = async (req, res) => {
     await createUserSession(res, user);
 
     //finally, delete the used verification token
-    await verificationTokenCache({ token });
+    await verificationTokenCache({ action: "del", token });
 
     res.status(201).json({ message: "Sign up successful" });
   } catch (error) {
