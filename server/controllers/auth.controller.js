@@ -10,8 +10,7 @@ import {
   updateUserPassword,
 } from "../models/users.model.js";
 import { sendEmailVerificationLink } from "../helpers/mailer.helper.js";
-import { clearJwtCookies } from "../utils/cookies.util.js";
-import { createUserSession } from "../utils/session.util.js";
+import { userSession } from "../utils/session.util.js";
 import {
   refreshTokenCache,
   verificationTokenCache,
@@ -82,7 +81,7 @@ export const signIn = async (req, res) => {
         .status(401)
         .json({ message: "Invalid username/email or password" });
 
-    await createUserSession(res, { sub: user.user_id, role: user.user_role });
+    await userSession.create(res, { sub: user.user_id, role: user.user_role });
 
     res.status(200).json({ message: "Sign in successful" });
   } catch (error) {
@@ -95,11 +94,7 @@ export const signOut = async (req, res) => {
   try {
     const { refresh_token } = req.cookies;
 
-    //delete refresh token from redis
-    if (refresh_token) {
-      await refreshTokenCache({ action: "del", token: refresh_token });
-    }
-    clearJwtCookies(res);
+    await userSession.terminate(res, refresh_token);
 
     res.status(200).json({ message: "Sign out successful" });
   } catch (error) {
@@ -131,10 +126,10 @@ export const verifyEmail = async (req, res) => {
 
     //then, create user session
     const user = { sub: newUserId, role };
-    await createUserSession(res, user);
+    await userSession.create(res, user);
 
     //finally, delete the used verification token
-    await verificationTokenCache({ token });
+    await verificationTokenCache({ action: "del", token });
 
     res.status(201).json({ message: "Sign up successful" });
   } catch (error) {
@@ -159,7 +154,7 @@ export const refreshUserSession = async (req, res) => {
 
     if (!cachedRefreshToken) {
       //force signout
-      clearJwtCookies(res);
+      await userSession.terminate(res);
       return res
         .status(401)
         .json({ message: "Session expired. Please sign in again" });
@@ -171,7 +166,7 @@ export const refreshUserSession = async (req, res) => {
     //create new user session
     const { sub, role } = JSON.parse(cachedRefreshToken);
     const user = { sub, role };
-    await createUserSession(res, user);
+    await userSession.create(res, user);
 
     res.status(200).json({ message: "Tokens refreshed" });
   } catch (error) {
