@@ -3,7 +3,6 @@ import {
   generateRefreshToken,
 } from "../helpers/tokens.helper.js";
 import { refreshTokenCache } from "./tokenCache.util.js";
-import { refreshTokenCache } from "./tokenCache.util.js";
 import { sendJwtCookies, clearJwtCookies } from "./cookies.util.js";
 
 export const userSession = {
