@@ -12,9 +12,6 @@ app.use(cookieParser());
 //sign up route
 app.use("/api", authRoutes);
 
-//tenant route
-app.use("/api", tenantRoutes);
-
 //default route for checking
 app.get("/", (req, res) =>
   res.send("Lomod Boarding House Management System WIP."),
