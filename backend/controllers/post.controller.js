@@ -1,19 +1,5 @@
 import { storeNewPost, getAllPost } from "../models/post.model.js";
 
-export const sendAllPost = async (req, res) => {
-  try {
-    const posts = await getAllPost();
-
-    res.status(200).json({ message: "Posts successfully retrieved", posts });
-  } catch (error) {
-    console.error("Error when posting:", error);
-    res.status(500).json({
-      message:
-        "Server error. A problem occured while trying to upload your post",
-    });
-  }
-};
-
 export const uploadPost = async (req, res) => {
   const { content } = req.body;
 
@@ -32,3 +18,18 @@ export const uploadPost = async (req, res) => {
     });
   }
 };
+
+export const sendAllPost = async (req, res) => {
+  try {
+    const posts = await getAllPost();
+
+    res.status(200).json({ message: "Posts successfully retrieved", posts });
+  } catch (error) {
+    console.error("Error when posting:", error);
+    res.status(500).json({
+      message:
+        "Server error. A problem occured while trying to upload your post",
+    });
+  }
+};
+
