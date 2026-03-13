@@ -11,3 +11,13 @@ export const storeNewPost = async (id, content) => {
     throw error;
   }
 };
+
+export const getAllPost = async () => {
+  try {
+    const result = await pool.query("SELECT * FROM post");
+    return result.rows;
+  } catch (error) {
+    console.error("Error in getAllPost function", error);
+    throw error;
+  }
+};
