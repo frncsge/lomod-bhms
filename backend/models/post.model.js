@@ -52,34 +52,6 @@ export const fetchPostsByLandlordId = async (id) => {
   }
 };
 
-export const fetchArchivedPost = async (postId) => {
-  try {
-    const result = await pool.query(
-      "SELECT * FROM post WHERE archived = true AND post_id = $1",
-      [postId],
-    );
-
-    return result.rows[0];
-  } catch (error) {
-    console.error("Error in fetchArchivedPost function", error);
-    throw error;
-  }
-};
-
-export const fetchArchivedPostsByLandlordId = async (id) => {
-  try {
-    const result = await pool.query(
-      "SELECT * FROM post WHERE archived = true AND landlord_id = $1",
-      [id],
-    );
-
-    return result.rows;
-  } catch (error) {
-    console.error("Error in fetchArchivedPostsByLandlordId function", error);
-    throw error;
-  }
-};
-
 export const updatePost = {
   text: async (postId, newText) => {
     try {
