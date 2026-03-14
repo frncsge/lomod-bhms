@@ -1,19 +1,40 @@
 import express from "express";
-import { uploadPost, sendAllPost, editPost,  } from "../controllers/post.controller.js";
+import {
+  createPost,
+  editPost,
+  getPost,
+  getPosts,
+  getLandlordArchivedPosts,
+} from "../controllers/post.controller.js";
 import { authenticateUser } from "../middlewares/auth.middleware.js";
 import { authorizeUser } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
+// getting posts
+router.get("/posts", authenticateUser, getPosts);
+router.get(
+  "/posts/archived",
+  authenticateUser,
+  authorizeUser(["landlord"]),
+  getLandlordArchivedPosts,
+);
+router.get("/posts/:id", authenticateUser, getPost);
+
+// creating post
 router.post(
   "/posts",
   authenticateUser,
   authorizeUser(["landlord"]),
-  uploadPost,
+  createPost,
 );
 
-router.get("/posts", authenticateUser, sendAllPost);
-
-router.patch("/post/:id", authenticateUser, authorizeUser(["landlord"]), editPost);
+// editing post
+router.patch(
+  "/posts/:id",
+  authenticateUser,
+  authorizeUser(["landlord"]),
+  editPost,
+);
 
 export default router;
