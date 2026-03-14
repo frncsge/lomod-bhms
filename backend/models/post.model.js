@@ -1,45 +1,91 @@
 import pool from "../config/db.config.js";
 
-export const storeNewPost = async (id, content) => {
+export const insertPost = async (landlord_id, content) => {
   try {
     await pool.query(
       "INSERT INTO post (landlord_id, post_content) VALUES ($1, $2)",
-      [id, content],
+      [landlord_id, content],
     );
   } catch (error) {
-    console.error("Error in storeNewPost function", error);
+    console.error("Error in insertPost function", error);
     throw error;
   }
 };
 
-export const getAllPost = async () => {
-  try {
-    const result = await pool.query("SELECT * FROM post");
-    return result.rows;
-  } catch (error) {
-    console.error("Error in getAllPost function", error);
-    throw error;
-  }
-};
-
-export const getPost = async (id) => {
+export const fetchPost = async (postId) => {
   try {
     const result = await pool.query("SELECT * FROM post WHERE post_id = $1", [
-      id,
+      postId,
     ]);
+
     return result.rows[0];
   } catch (error) {
-    console.error("Error in getPost function", error);
+    console.error("Error in fetchPost function", error);
+    throw error;
+  }
+};
+
+export const fetchPosts = async () => {
+  try {
+    const result = await pool.query(
+      "SELECT * FROM post WHERE archived = false ORDER BY created_at DESC",
+    );
+
+    return result.rows;
+  } catch (error) {
+    console.error("Error in fetchPosts function", error);
+    throw error;
+  }
+};
+
+export const fetchPostsByLandlordId = async (id) => {
+  try {
+    const result = await pool.query(
+      "SELECT * FROM post WHERE archived = false AND landlord_id = $1",
+      [id],
+    );
+
+    return result.rows;
+  } catch (error) {
+    console.error("Error in fetchPostsByLandlordId function", error);
+    throw error;
+  }
+};
+
+export const fetchArchivedPost = async (postId) => {
+  try {
+    const result = await pool.query(
+      "SELECT * FROM post WHERE archived = true AND post_id = $1",
+      [postId],
+    );
+
+    return result.rows[0];
+  } catch (error) {
+    console.error("Error in fetchArchivedPost function", error);
+    throw error;
+  }
+};
+
+export const fetchArchivedPostsByLandlordId = async (id) => {
+  try {
+    const result = await pool.query(
+      "SELECT * FROM post WHERE archived = true AND landlord_id = $1",
+      [id],
+    );
+
+    return result.rows;
+  } catch (error) {
+    console.error("Error in fetchArchivedPostsByLandlordId function", error);
     throw error;
   }
 };
 
 export const updatePost = {
-  text: async (id, newText) => {
+  text: async (postId, newText) => {
     try {
       await pool.query("UPDATE post SET post_content = $1 WHERE post_id = $2", [
         newText,
-        id,
+        postId,
       ]);
     } catch (error) {
       console.error("Error in updatePost.text function", error);
@@ -47,11 +93,11 @@ export const updatePost = {
     }
   },
 
-  archive: async (id, archived) => {
+  archive: async (postId, archived) => {
     try {
-      await pool.query("UPDATE post SET archive = $1 WHERE post_id = $2", [
+      await pool.query("UPDATE post SET archived = $1 WHERE post_id = $2", [
         archived,
-        id,
+        postId,
       ]);
     } catch (error) {
       console.error("Error in updatePost.archive function", error);
