@@ -41,13 +41,27 @@ export const fetchPosts = async () => {
 export const fetchPostsByLandlordId = async (id) => {
   try {
     const result = await pool.query(
-      "SELECT * FROM post WHERE archived = false AND landlord_id = $1",
+      "SELECT * FROM post WHERE archived = false AND landlord_id = $1 ORDER BY created_at DESC",
       [id],
     );
 
     return result.rows;
   } catch (error) {
     console.error("Error in fetchPostsByLandlordId function", error);
+    throw error;
+  }
+};
+
+export const fetchArchivedPostsByLandlordId = async (id) => {
+  try {
+    const result = await pool.query(
+      "SELECT * FROM post WHERE landlord_id = $1 AND archived = true ORDER BY created_at DESC",
+      [id],
+    );
+
+    return result.rows;
+  } catch (error) {
+    console.error("Error in fetchArchivedPostsByLandlordId function", error);
     throw error;
   }
 };
