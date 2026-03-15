@@ -3,11 +3,13 @@ import {
   fetchPost,
   fetchPosts,
   fetchArchivedPostsByLandlordId,
+  fetchPostsByLandlordId,
   updatePost,
 } from "../models/post.model.js";
 
 export const getPost = async (req, res) => {
   const { id } = req.params;
+  
   try {
     const post = await fetchPost(id);
 
@@ -35,6 +37,21 @@ export const getPosts = async (req, res) => {
     console.error("Error when getting posts:", error);
     res.status(500).json({
       message: "Server error. A problem occured while trying to get posts",
+    });
+  }
+};
+
+export const getPostsByLandlord = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const posts = await fetchPostsByLandlordId(id);
+
+    res.status(200).json({ posts });
+  } catch (error) {
+    console.error("Error when getting posts:", error);
+    res.status(500).json({
+      message: "Server error. A problem occured while trying to get posts by landlord",
     });
   }
 };
