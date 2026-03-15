@@ -2,6 +2,9 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import authRoutes from "./routes/auth.route.js";
 import postRoutes from "./routes/post.route.js";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const app = express();
 
