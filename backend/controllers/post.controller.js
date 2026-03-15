@@ -2,14 +2,15 @@ import {
   insertPost,
   fetchPost,
   fetchPosts,
-  fetchArchivedPostsByLandlordId,
   fetchPostsByLandlordId,
+  fetchArchivedPostsByLandlordId,
   updatePost,
 } from "../models/post.model.js";
+import { getLandlordByUserId } from "../models/landlord.model.js";
 
 export const getPost = async (req, res) => {
   const { id } = req.params;
-  
+
   try {
     const post = await fetchPost(id);
 
@@ -32,7 +33,7 @@ export const getPosts = async (req, res) => {
   try {
     const posts = await fetchPosts();
 
-    res.status(200).json({ message: "Posts successfully retrieved", posts });
+    res.status(200).json({ posts });
   } catch (error) {
     console.error("Error when getting posts:", error);
     res.status(500).json({
@@ -42,16 +43,17 @@ export const getPosts = async (req, res) => {
 };
 
 export const getPostsByLandlord = async (req, res) => {
-  const { id } = req.params;
+  const { landlordId } = req.params;
 
   try {
-    const posts = await fetchPostsByLandlordId(id);
+    const posts = await fetchPostsByLandlordId(landlordId);
 
     res.status(200).json({ posts });
   } catch (error) {
     console.error("Error when getting posts:", error);
     res.status(500).json({
-      message: "Server error. A problem occured while trying to get posts by landlord",
+      message:
+        "Server error. A problem occured while trying to get posts by landlord",
     });
   }
 };
@@ -63,7 +65,9 @@ export const createPost = async (req, res) => {
     return res.status(400).json({ message: "Content of a post is required" });
 
   try {
-    await insertPost(req.user.sub, content);
+    // fetch landlord fist
+    const { landlord_id } = await getLandlordByUserId(req.user.sub);
+    await insertPost(landlord_id, content);
 
     res.status(201).json({ message: "Post created successfully" });
   } catch (error) {
@@ -79,10 +83,7 @@ export const getLandlordArchivedPosts = async (req, res) => {
   try {
     const archivedPosts = await fetchArchivedPostsByLandlordId(req.user.sub);
 
-    res.status(200).json({
-      message: "Archived posts successfully retrieved",
-      archivedPosts,
-    });
+    res.status(200).json({ archivedPosts });
   } catch (error) {
     console.error("Error when getting landlord archived posts:", error);
     res.status(500).json({
