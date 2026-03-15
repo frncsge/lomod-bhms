@@ -249,7 +249,7 @@ export const setTenantAccountPassword = async (req, res) => {
 
     res
       .status(200)
-      .json({ message: "Password set successfully. You can now login" });
+      .json({ message: "Password set successfully. You can now sign in" });
   } catch (error) {
     console.error("Error setting password for new tenant account:", error);
     res.status(500).json({ message: "Server error" });
