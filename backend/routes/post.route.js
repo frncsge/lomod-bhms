@@ -5,6 +5,7 @@ import {
   getPost,
   getPosts,
   getLandlordArchivedPosts,
+  getPostsByLandlord,
 } from "../controllers/post.controller.js";
 import { authenticateUser } from "../middlewares/auth.middleware.js";
 import { authorizeUser } from "../middlewares/auth.middleware.js";
@@ -20,6 +21,11 @@ router.get(
   getLandlordArchivedPosts,
 );
 router.get("/posts/:id", authenticateUser, getPost);
+router.get(
+  "/landlords/:landlordId/posts",
+  authenticateUser,
+  getPostsByLandlord,
+);
 
 // creating post
 router.post(
