@@ -13,7 +13,7 @@ export const authenticateUser = (req, res, next) => {
 
     next();
   } catch (error) {
-    return res.status(401).json({ message: "Signing in is required" });
+    return res.status(401).json({ message: "Sign in or refresh session to continue the request" });
   }
 };
 
